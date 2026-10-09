@@ -77,8 +77,8 @@ button { font: inherit; color: inherit; }
 .app-header .wrap { display: flex; align-items: stretch; gap: 48px; min-height: 56px; flex-wrap: wrap; }
 .logo { align-self: center; width: 88px; height: 26px; border: 1px dashed var(--panel-border); display: flex; align-items: center; justify-content: center; font-size: 11px; letter-spacing: 0.08em; color: var(--muted); }
 .app-navs { display: flex; align-self: stretch; gap: 32px; }
-.app-nav { display: flex; align-items: center; border-bottom: 2px solid transparent; color: var(--text); text-decoration: none; font-size: 15px; }
-.app-nav:hover { color: var(--text); border-bottom-color: var(--button-border); }
+.app-nav { display: flex; align-items: center; border-bottom: 3px solid transparent; color: var(--text); text-decoration: none; font-size: 15px; }
+.app-nav:hover { color: var(--text); border-bottom-color: var(--panel-border); }
 .app-nav[aria-current="page"] { border-bottom-color: var(--accent); }
 
 .crumbs { font-size: 13px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 14px 0; }
@@ -99,9 +99,9 @@ main.wrap { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; flex-dire
 .views > .fill-view { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .fill-view > section { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .fill-root { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.tabs { display: flex; gap: 0 32px; flex-wrap: wrap; padding: 0 20px; border-bottom: 1px solid var(--panel-line); }
-.tabs a { padding: 12px 0 10px; color: var(--text); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.tabs a:hover { border-bottom-color: var(--button-border); }
+.tabs { display: flex; gap: 0 24px; flex-wrap: wrap; padding: 0 20px; border-bottom: 1px solid var(--panel-line); }
+.tabs a { padding: 12px 0 6px; color: var(--text); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tabs a:hover { border-bottom-color: var(--panel-border); }
 .tabs a[aria-current="page"] { border-bottom-color: var(--accent); }
 .tabs a[aria-disabled="true"] { color: var(--disabled-text); cursor: default; }
 .tabs a[aria-disabled="true"]:hover { border-bottom-color: transparent; }
@@ -244,9 +244,9 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .cs-tools { display: flex; flex-wrap: wrap; gap: 10px 12px; }
 .cs-tools .search { flex: 1 1 240px; padding-right: 8px; }
 .cs-tools .select { flex: 0 1 210px; }
-.subtabs { display: flex; gap: 28px; margin-top: 14px; border-bottom: 1px solid var(--divider); }
-.subtab { border: 0; background: transparent; padding: 8px 0; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; color: var(--muted); }
-.subtab:hover { color: var(--text); }
+.subtabs { display: flex; gap: 24px; margin-top: 14px; border-bottom: 1px solid var(--divider); }
+.subtab { border: 0; background: transparent; padding: 8px 0 6px; border-bottom: 3px solid transparent; margin-bottom: -1px; cursor: pointer; color: var(--muted); }
+.subtab:hover { color: var(--text); border-bottom-color: var(--panel-border); }
 .subtab[aria-pressed="true"] { color: var(--text); border-bottom-color: var(--accent); }
 .subtab .n { margin-left: 6px; font-size: 13px; color: var(--muted); }
 .c-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; align-content: start; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-top: 16px; padding-right: 6px; }
@@ -418,16 +418,20 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 
 /* Version bar (Simulation): Current / New as large tabs across the full width; its line tops the overview. */
 .ver-bar { flex: 0 0 auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px 16px; flex-wrap: wrap; margin-top: 14px; border-bottom: 1px solid var(--panel-line); }
-.ver-tabs { display: flex; gap: 32px; }
-.ver-tab { display: inline-flex; align-items: center; gap: 8px; margin-bottom: -1px; padding: 8px 0 9px; border: 0; border-bottom: 3px solid transparent; background: transparent; font: inherit; font-size: 16px; color: var(--muted); cursor: pointer; }
-.ver-tab:hover, .ds .ver-tab.is-hover { color: var(--text); border-bottom-color: var(--button-border); }
-.ver-tab[aria-pressed="true"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); cursor: default; }
-.ver-badge { white-space: nowrap; padding: 1px 8px; font-size: 12px; font-weight: 400; color: var(--text); background: var(--tag-bg); }
+.ver-tabs { display: flex; gap: 24px; }
+.ver-tab { display: inline-flex; align-items: center; gap: 8px; margin-bottom: -1px; padding: 6px 0 6px; border: 0; border-bottom: 3px solid transparent; background: transparent; font: inherit; font-size: 16px; color: var(--muted); cursor: pointer; }
+.ver-tab:hover, .ds .ver-tab.is-hover { color: var(--text); border-bottom-color: var(--panel-border); }
+.ver-tab[aria-pressed="true"] { color: var(--text); border-bottom-color: var(--accent); cursor: default; }
+/* Change count reads like the sub-tab counts: quiet text, hidden when nothing changed. */
+.ver-badge { white-space: nowrap; font-size: 13px; color: var(--muted); }
+.ver-badge:empty { display: none; }
 .ver-note { display: flex; align-items: center; gap: 6px; padding-bottom: 10px; font-size: 13px; color: var(--muted); }
 .ver-bar + #sim-ov .ov3 { margin-top: 0; border-top: 0; }
 .ver-bar { justify-content: flex-start; column-gap: 28px; }
 .ver-note { margin-left: auto; }
-.ver-tools { display: flex; align-items: center; padding-bottom: 8px; }
+/* A short divider keeps the view toggle from reading as a third tab. */
+.ver-tools { display: flex; align-items: center; gap: 20px; padding-bottom: 5px; }
+.ver-tools::before { content: ""; width: 1px; height: 16px; background: var(--panel-border); }
 
 /* Compact overview: same columns, two lines each (title + bar, one line of content). */
 .ov3.compact .ov-sec { padding-top: 10px; padding-bottom: 10px; }
@@ -582,9 +586,9 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .ds .x.is-hover { background: var(--ex-hover); }
 .ds .bench-item.is-hover { background: var(--surface-hover); }
 .ds .seg.is-hover { position: relative; z-index: 1; outline: 1px solid var(--ink-soft); outline-offset: -1px; }
-.ds .tabs a.is-hover { border-bottom-color: var(--button-border); }
-.ds .app-nav.is-hover { border-bottom-color: var(--button-border); }
-.ds .subtab.is-hover { color: var(--text); }
+.ds .tabs a.is-hover { border-bottom-color: var(--panel-border); }
+.ds .app-nav.is-hover { border-bottom-color: var(--panel-border); }
+.ds .subtab.is-hover { color: var(--text); border-bottom-color: var(--panel-border); }
 .ds .tabs { padding: 0; border-bottom: 0; }
 .ds .subtabs { margin-top: 0; border-bottom: 0; }
 .ds .app-navs { align-self: auto; }
@@ -2111,7 +2115,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   var simRoot = document.getElementById('sim');
   function changesLabel() {
     var n = P.rows.filter(function (r) { return r.removed || Math.abs(r.nw - r.w) >= 0.005; }).length;
-    return n ? n + (n === 1 ? ' change' : ' changes') : 'no changes';
+    return n ? n + (n === 1 ? ' change' : ' changes') : '';
   }
   function syncSimTotal() {
     var n = document.getElementById('sm-new-n');
@@ -2637,8 +2641,8 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         ['Sub-tab', 'With count', [subTab(), subTab('hover'), subTab('current'), null]],
         ['Version switch', 'Current / New in Simulation', [versionTabs(), versionTabs('hover'), versionTabs('current'), null]]
       ]) + specsAndUsage([
-        ['Label', 'Body 14 · header 15', '--text'], ['Current underline', '2px', '--accent'], ['Hover underline', '2px', '--button-border'], ['Disabled', 'var(--disabled-text), “Not available yet” tooltip', null],
-        ['Sub-tab label', 'muted until current', '--muted'], ['Version switch', 'full-width bar under the title; 16px labels, 3px underline; New shows a change-count badge; the Compact / Full view link sits right after the tabs; Current shows a read-only note on the right', '--accent'], ['Count', 'Label 13, 6px gap', '--muted'], ['Spacing', '32px between tabs · 28px sub-tabs', null]],
+        ['Label', 'Body 14 · header 15', '--text'], ['Current underline', '3px', '--accent'], ['Hover underline', '3px, every tab type', '--panel-border'], ['Disabled', 'var(--disabled-text), “Not available yet” tooltip', null],
+        ['Sub-tab label', 'muted until current', '--muted'], ['Version switch', 'full-width bar under the title; 16px labels, 3px underline, no bold; New shows a change-count badge; the Compact / Full view link sits right after the tabs; Current shows a read-only note on the right', '--accent'], ['Count', 'Label 13, 6px gap', '--muted'], ['Spacing', '24px between tabs · 8px label to underline · same for every tab type', null], ['Selected', 'text colour + accent line; never bold, so labels do not shift', null]],
         ['Grey out tabs that are not built yet.'], ['Use the accent underline for anything but the current item.'])));
 
     add('Components', 'c-controls', 'Selection controls', section('c-controls', 'Components', 'Selection controls',
