@@ -123,7 +123,8 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 
 .cols { display: flex; flex-wrap: wrap; gap: 0 28px; margin-top: 8px; }
 .main-col { flex: 999 1 720px; min-width: 0; }
-.side-col { flex: 1 1 320px; min-width: 0; border-left: 1px solid var(--panel-line); padding: 14px 0 14px 28px; }
+/* Same width as the Component selection sidebar (.cs), so side columns line up across tabs. */
+.side-col { flex: 1 1 380px; min-width: 0; border-left: 1px solid var(--panel-line); padding: 14px 6px 14px 28px; }
 
 .row { padding: 14px 0; border-bottom: 1px solid var(--line); }
 .row:last-child { border-bottom: 0; }
@@ -222,7 +223,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .bench-item input { width: 15px; height: 15px; margin: 2px 0 0; flex: 0 0 auto; accent-color: var(--accent); cursor: pointer; }
 .bi-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .bi-prev { font-size: 13px; color: var(--muted); }
-.ccy-tag { font-size: 12px; color: var(--ink-soft); background: var(--tag-bg); padding: 0 6px; line-height: 20px; flex: 0 0 auto; }
+.ccy-tag { font-size: 12px; color: var(--muted); border: 1px solid var(--panel-border); padding: 0 6px; line-height: 18px; flex: 0 0 auto; white-space: nowrap; }
 .bench-detail { grid-area: detail; min-width: 0; padding: 20px 28px; background: var(--surface-sunken); }
 .bench-detail-inner { position: sticky; top: 16px; }
 .bench-detail h3 { margin: 0; font-size: 18px; font-weight: 400; }
@@ -261,7 +262,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .c-name { font-weight: 600; }
 .c-meta { font-size: 13px; color: var(--muted); margin-top: 1px; }
 .c-desc { margin: 8px 0 0; font-size: 13px; color: var(--ink-soft); }
-.tag-warn { display: inline-flex; align-self: flex-start; align-items: flex-start; gap: 5px; margin-top: 10px; font-size: 12px; color: var(--ink-soft); background: var(--tag-bg); padding: 3px 7px; line-height: 1.35; }
+.tag-warn { display: inline-flex; align-self: flex-start; align-items: flex-start; gap: 5px; margin-top: 10px; font-size: 12px; color: var(--conflict-text); background: var(--ex-row); padding: 3px 7px; line-height: 1.35; }
 /* Icon sits on the first line, so wrapped tags read as one block. */
 .tag-warn svg { flex: 0 0 auto; margin-top: 1px; }
 
@@ -388,7 +389,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .al-stack { display: flex; gap: 2px; height: 14px; background: var(--track); }
 .al-stack span { position: relative; display: block; height: 100%; background: var(--bar-neutral); }
 .al-stack span:hover { filter: brightness(0.9); }
-.al-stack span.on { z-index: 1; outline: 2px solid var(--ink-strong); outline-offset: 1px; }
+.al-stack span.on::before { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 2px; background: var(--ink-strong); }
 .al-stack span[data-tip]:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 20; padding: 3px 8px; white-space: nowrap; font-size: 12px; color: #FFFFFF; background: var(--ink-strong); }
 .al-total-line { display: flex; align-items: baseline; gap: 12px; }
 .al-total strong { margin-left: auto; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -1108,7 +1109,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       h += '<label class="bench-item' + (on ? ' on' : '') + '">' +
         '<input type="radio" name="bench" id="b-' + b.id + '" value="' + b.id + '"' + (on ? ' checked' : '') + '>' +
         '<span class="bi-text"><span>' + esc(b.name) + '</span><span class="bi-prev">' + esc(preview) + '</span></span>' +
-        (b.ccy !== pccy ? '<span class="ccy-tag" title="Benchmark currency">' + b.ccy + '</span>' : '') +
+        (b.ccy !== pccy ? '<span class="ccy-tag" title="Benchmark currency differs from the portfolio currency (' + pccy + ')">in ' + b.ccy + '</span>' : '') +
         '</label>';
     });
     if (!list.length) h += '<div class="muted" style="padding: 12px">No benchmarks match “' + esc(B.q) + '”</div>';
@@ -1976,14 +1977,14 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       : active().filter(function (r) { return P.showZero || r.w > 0 || r.nw > 0; });
     if (!cur) rows.sort(function (a, b) { return (isConflict(b) ? 1 : 0) - (isConflict(a) ? 1 : 0); });
     var h = '<table class="ptbl"><thead><tr><th>Asset class</th><th>Instrument / account</th><th>Building block</th><th>Currency</th>' +
-      '<th class="num">Price</th><th class="num">Weight %</th>' +
-      (cur ? '<th class="num">ESG</th>' : '<th class="num">New weight %</th><th class="num">ESG</th><th><span style="position: absolute; left: -9999px">Actions</span></th>') +
+      '<th class="num">Price</th><th class="num">' + (cur ? 'Weight %' : 'Current %') + '</th>' +
+      (cur ? '<th class="num">ESG</th>' : '<th class="num">New %</th><th class="num">ESG</th><th><span style="position: absolute; left: -9999px">Actions</span></th>') +
       '</tr></thead><tbody>';
     rows.forEach(function (r) {
       if (cur) {
         h += '<tr><td>' + r.cls + '</td>' +
           '<td>' + esc(r.name) + (r.isin ? '<span class="sub">' + r.isin + '</span>' : '') +
-          (excluded(r) ? '<span class="tag-warn" style="margin-top: 4px">' + ICON.warn + 'Conflicts with exclusions: excluded instrument</span>' : '') + '</td>' +
+          (excluded(r) ? '<span class="tag-x">' + ICON.warn + 'Conflicts with exclusions: excluded instrument</span>' : '') + '</td>' +
           '<td>' + esc(r.bb) + '</td><td>' + r.ccy + '<span class="sub">' + r.fx.toFixed(2) + '</span></td>' +
           '<td class="num">' + f2(r.price) + '</td><td class="num">' + f2(r.w) + '</td><td class="num">' + r.esg + '</td></tr>';
         return;
@@ -2023,8 +2024,8 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       if (!r.removed) { groups[k].n++; groups[k].nw += r.nw; }
       groups[k].w += r.w;
     });
-    var h = '<table class="ptbl"><thead><tr><th>' + title + '</th><th class="num">Positions</th><th class="num">Weight %</th>' +
-      '<th class="num">New weight %</th><th class="num">Change</th></tr></thead><tbody>';
+    var h = '<table class="ptbl"><thead><tr><th>' + title + '</th><th class="num">Positions</th><th class="num">Current %</th>' +
+      '<th class="num">New %</th><th class="num">Change</th></tr></thead><tbody>';
     order.forEach(function (k) {
       var g = groups[k];
       var d = g.nw - g.w;
@@ -2542,17 +2543,17 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         ['Show chosen items as grey chips.', 'Mix suggestions and exclusions on one wrapping line.'])));
 
     add('Components', 'c-tag', 'Tag & status', section('c-tag', 'Components', 'Tag & status',
-      'Small read-only signals. ⚠ for conflicts and failed checks, ⊘ only for excluded items, ✓ for passed.', '7 variants',
+      'Small read-only signals. ⚠ for conflicts and failed checks, ⊘ only for excluded items, ✓ for passed. Conflicts use the exclusion pink, never the grey of suggestions.', '7 variants',
       '<h3 class="ds-h3">Variants</h3>' + matrix(['Example', 'Use'], [
         ['Conflict tag', 'Informational', ['<span class="tag-warn" style="margin: 0">' + I.warn + 'Conflicts with exclusions: Energy</span>', '<span class="muted">Cards, allocation rows</span>']],
         ['Conflict note', 'Needs a decision', ['<span class="tag-x" style="margin: 0">' + I.warn + 'Conflicts with exclusions: excluded instrument</span>', '<span class="muted">Pink table row with Keep / Remove</span>']],
         ['Resolved note', '', ['<span class="kept" style="margin: 0">' + I.warn + 'Kept despite exclusion</span>', '<span class="muted">After “Keep”</span>']],
-        ['Currency tag', '', ['<span class="ccy-tag">USD</span>', '<span class="muted">Differs from portfolio currency</span>']],
+        ['Currency tag', '', ['<span class="ccy-tag">in USD</span>', '<span class="muted">Differs from portfolio currency</span>']],
         ['Count', '', ['<span class="count">2 excluded</span>', '<span class="muted">Next to field labels</span>']],
         ['Passed', '', ['<span class="ov-status">' + I.check + '7 of 7 passed</span>', '<span class="muted">Section status</span>']],
         ['Failed', '', ['<span class="ov-status qc-fail">' + I.warn + '1 of 7 failed</span>', '<span class="muted">Section status, error colour</span>']]
       ], '150px') + specsAndUsage([
-        ['Tag', '12 / 21px, padding 0 7px, fill var(--tag-bg)', null], ['Icon', '12px, 5px gap', null], ['Conflict note text', '12px var(--conflict-text), icon in accent', '--accent'],
+        ['Conflict tag', '12 / 1.35, padding 3px 7px, text var(--conflict-text)', '--ex-row'], ['Icon', '12px, 5px gap', null], ['Conflict note text', '12px var(--conflict-text), icon in accent', '--accent'],
         ['Count', 'Label 13', '--muted'], ['Failed', 'text + icon', '--error']],
         ['Always write what the conflict is: “Conflicts with exclusions: Energy”.'],
         ['Use colour alone to signal a state — keep the icon and words.'])));
@@ -2614,7 +2615,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 
     add('Components', 'c-table', 'Data table', section('c-table', 'Components', 'Data table',
       'Positions and other dense data. Sticky header, tabular numbers, inline editing for weights.', '',
-      '<div class="ds-frame flush" style="margin-top: 16px; overflow-x: auto"><table class="ptbl"><thead><tr><th>Asset class</th><th>Instrument / account</th><th>Currency</th><th class="num">Weight %</th><th class="num">New weight %</th><th></th></tr></thead><tbody>' +
+      '<div class="ds-frame flush" style="margin-top: 16px; overflow-x: auto"><table class="ptbl"><thead><tr><th>Asset class</th><th>Instrument / account</th><th>Currency</th><th class="num">Current %</th><th class="num">New %</th><th></th></tr></thead><tbody>' +
       '<tr class="conflict"><td>Equity</td><td>Apple Inc.<span class="sub">US0378331005</span><span class="tag-x">' + I.warn + 'Conflicts with exclusions: excluded instrument</span></td><td>USD<span class="sub">0.85</span></td><td class="num">1.50</td><td class="num"><label class="wbox"><input value="1.50" tabindex="-1"><span>%</span></label></td><td class="act-cell"><button type="button" class="btn-sm" tabindex="-1">Keep</button> <button type="button" class="btn-sm" tabindex="-1">Remove</button></td></tr>' +
       '<tr class="edited"><td>Equity</td><td>Antofagasta plc<span class="sub">GB0000456144</span></td><td>GBP<span class="sub">1.14</span></td><td class="num">0.51</td><td class="num"><label class="wbox"><input value="1.00" tabindex="-1"><span>%</span></label></td><td class="act-cell"><button type="button" class="dots" tabindex="-1" aria-label="Actions">' + I.dots + '</button></td></tr>' +
       '<tr><td>Liquidity</td><td>EUR account</td><td>EUR<span class="sub">1.00</span></td><td class="num">2.00</td><td class="num"><label class="wbox"><input value="2.00" tabindex="-1"><span>%</span></label></td><td class="act-cell"><button type="button" class="dots" tabindex="-1" aria-label="Actions">' + I.dots + '</button></td></tr>' +
