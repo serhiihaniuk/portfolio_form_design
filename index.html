@@ -1708,7 +1708,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   }
 
   var allocRoot = document.getElementById('alloc');
-  var STEP_HINT = '↑ ↓ changes by 0.5 · Shift + ↑ ↓ by 5';
+  var STEP_HINT = '↑ ↓ or mouse wheel changes by 0.1 · with Shift by 1';
 
   // Stacked bar of all components, grouped and coloured by asset class (same colours as the donut);
   // the selected component is outlined, the unallocated part is the empty track.
@@ -1816,19 +1816,33 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     setW(it, parseW(e.target.value));
     syncAlloc();
   });
-  // ↑/↓ steps 0.5, Shift + ↑/↓ steps 5.
-  allocRoot.addEventListener('keydown', function (e) {
+  // Weight fields (allocation and simulation): ↑/↓ or the mouse wheel step 0.1, with Shift 1.
+  // The wheel only acts on the focused field, so scrolling the page never changes a value by accident.
+  function stepFromEvent(e) {
+    var big = e.shiftKey;
+    if (e.type === 'keydown') {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return 0;
+      return (big ? 1 : 0.1) * (e.key === 'ArrowUp' ? 1 : -1);
+    }
+    if (document.activeElement !== e.target) return 0;
+    var d = e.deltaY || e.deltaX; // Shift + wheel scrolls horizontally on some systems
+    return d ? (big ? 1 : 0.1) * (d < 0 ? 1 : -1) : 0;
+  }
+  function stepWeight(e) {
     var key = e.target.getAttribute('data-key');
-    if (!key || e.target.tagName !== 'INPUT' || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+    if (!key || e.target.tagName !== 'INPUT') return;
+    var step = stepFromEvent(e);
+    if (!step) return;
     e.preventDefault();
     var it = itemBy(key);
-    var step = (e.shiftKey ? 5 : 0.5) * (e.key === 'ArrowUp' ? 1 : -1);
     var v = Math.min(100, Math.max(0, round2(getW(it) + step)));
     setW(it, v);
     delete A.raw[key];
     e.target.value = f2(v);
     syncAlloc();
-  });
+  }
+  allocRoot.addEventListener('keydown', stepWeight);
+  allocRoot.addEventListener('wheel', stepWeight, { passive: false });
   // Editing a weight selects its row.
   allocRoot.addEventListener('focusin', function (e) {
     var key = e.target.getAttribute('data-key');
@@ -1919,7 +1933,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         '<td>' + r.ccy + '<span class="sub">' + r.fx.toFixed(2) + '</span></td>' +
         '<td class="num">' + f2(r.price) + '</td>' +
         '<td class="num">' + f2(r.w) + '</td>' +
-        '<td class="num"><label class="wbox"><input id="nw-' + r.id + '" data-row="' + r.id + '" value="' + esc(P.raw[r.id] != null ? P.raw[r.id] : f2(r.nw)) + '" inputmode="decimal" autocomplete="off" aria-label="New weight of ' + esc(r.name) + ' in percent"><span>%</span></label></td>' +
+        '<td class="num"><label class="wbox" title="' + STEP_HINT + '"><input id="nw-' + r.id + '" data-row="' + r.id + '" value="' + esc(P.raw[r.id] != null ? P.raw[r.id] : f2(r.nw)) + '" inputmode="decimal" autocomplete="off" aria-label="New weight of ' + esc(r.name) + ' in percent"><span>%</span></label></td>' +
         '<td class="num">' + r.esg + '</td>' +
         '<td class="act-cell">' + actions + '</td></tr>';
     });
@@ -2022,6 +2036,23 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     syncSimTotal();
     refreshSimOverview();
   });
+  function stepSim(e) {
+    var id = e.target.getAttribute('data-row');
+    if (!id || e.target.type !== 'text') return;
+    var step = stepFromEvent(e);
+    if (!step) return;
+    e.preventDefault();
+    var r = rowBy(id);
+    r.nw = Math.min(100, Math.max(0, round2(r.nw + step)));
+    delete P.raw[id];
+    e.target.value = f2(r.nw);
+    var tr = document.getElementById('row-' + id);
+    if (tr) tr.classList.toggle('edited', Math.abs(r.nw - r.w) >= 0.005);
+    syncSimTotal();
+    refreshSimOverview();
+  }
+  simRoot.addEventListener('keydown', stepSim);
+  simRoot.addEventListener('wheel', stepSim, { passive: false });
   simRoot.addEventListener('focusout', function (e) {
     var id = e.target.getAttribute('data-row');
     if (id && e.target.type === 'text') { delete P.raw[id]; e.target.value = f2(rowBy(id).nw); }
@@ -2382,7 +2413,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       ]) + specsAndUsage([
         ['Height', '32px · 28px inside tables', null], ['Padding', '0 10px · weight 0 8px, suffix 0 8px', null], ['Border', '1px', '--control-border'], ['Focus border', '1px, no ring', '--ink-soft'],
         ['Error', 'border + 13px message below', '--error'], ['Label', 'Body 14, 4px above the field', '--text'], ['Helper / suffix', 'Label 13', '--muted'],
-        ['Numbers', 'right-aligned, tabular, 2 decimals on blur', null], ['Keyboard (weight)', '↑ ↓ ±0.5 · Shift + ↑ ↓ ±5, clamped to 0–100', null], ['Disabled', 'light fill, muted label', '--disabled-text']],
+        ['Numbers', 'right-aligned, tabular, 2 decimals on blur', null], ['Keyboard & wheel (weight)', '↑ ↓ or wheel ±0.1 · with Shift ±1 · wheel only while focused · clamped to 0–100', null], ['Disabled', 'light fill, muted label', '--disabled-text']],
         ['Format weights to 2 decimals when the field loses focus.', 'Clear a search field when its list closes.'],
         ['Use a placeholder as the only label.', 'Show read-only values in fields.'])));
 
@@ -2527,7 +2558,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         ['Over 100%', 'Error colour', [totalDemo('over')]]
       ], '180px') +
       specsAndUsage([
-        ['Weight field', '96×32px, right-aligned, % suffix, 2 decimals on blur', '--control-border'], ['Keyboard', '↑ ↓ ±0.5 · Shift + ↑ ↓ ±5', null],
+        ['Weight field', '96×32px, right-aligned, % suffix, 2 decimals on blur', '--control-border'], ['Keyboard & wheel', '↑ ↓ or wheel ±0.1 · with Shift ±1 · wheel only while focused', null],
         ['Share bar', '3px, width = weight of 100%, in the asset-class colour', '--chart-1'], ['Share track', '', '--track'],
         ['Stacked bar', '14px, 2px gaps, one segment per component, grouped and coloured by asset class like the donut; hover shows name, class and weight', '--chart-1'],
         ['Selected segment', '2px outline, 1px offset', '--ink-strong'],
