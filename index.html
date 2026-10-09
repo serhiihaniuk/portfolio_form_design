@@ -251,10 +251,12 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .subtab .n { margin-left: 6px; font-size: 13px; color: var(--muted); }
 .c-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; align-content: start; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-top: 16px; padding-right: 6px; }
 /* Catalogue card = one big checkbox: checkbox next to the name, the whole card toggles. */
-.c-card { display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding: 14px 16px; border: 1px solid var(--panel-border); background: var(--surface); cursor: pointer; }
+.c-card { position: relative; display: flex; min-width: 0; border: 1px solid var(--panel-border); background: var(--surface); }
 .c-card:hover { background: var(--surface-hover); }
-.c-card:focus-within { outline: 2px solid var(--focus); outline-offset: 1px; }
-.c-card:has(.c-check:focus:not(:focus-visible)) { outline: 0; }
+/* The label fills the card; its bottom padding leaves room for "Learn more", which sits on top of it. */
+.c-hit { flex: 1 1 auto; display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding: 14px 16px 40px; cursor: pointer; }
+.c-more { position: absolute; left: 38px; bottom: 8px; }
+.c-card:has(.c-check:focus-visible) { outline: 2px solid var(--focus); outline-offset: 1px; }
 /* Choices are marked in the accent colour on every tab; grey is reserved for suggestions. */
 .c-card.on { border-color: var(--accent); }
 .c-check { flex: 0 0 auto; width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--accent); cursor: pointer; }
@@ -409,6 +411,19 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .al-left { font-size: 13px; color: var(--muted); }
 .al-left.off { color: var(--error); }
 .al-detail { min-height: 0; overflow-y: auto; padding: 20px 28px 24px; background: var(--surface-sunken); }
+/* Modal (Learn more): header, scrolling body, actions on the right. */
+.modal { width: min(900px, calc(100vw - 32px)); max-height: calc(100vh - 64px); padding: 0; border: 0; color: var(--text); background: var(--surface); box-shadow: var(--shadow-pop); }
+.modal[open] { display: flex; flex-direction: column; }
+.modal::backdrop { background: rgba(28, 28, 28, 0.45); }
+.md-head { flex: 0 0 auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 20px 24px 16px; border-bottom: 1px solid var(--divider); }
+.md-head h3 { margin: 0; font-size: 20px; font-weight: 400; }
+.md-head .tag-warn { margin-top: 8px; }
+.md-x { flex: 0 0 auto; width: 32px; height: 32px; }
+.md-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 24px 24px; }
+.md-foot { flex: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 14px 24px; border-top: 1px solid var(--divider); }
+.md-state { display: inline-flex; align-items: center; gap: 6px; margin-right: auto; font-size: 13px; color: var(--muted); }
+.md-state svg { color: var(--accent); }
+.modal-demo { max-width: 560px; margin: 0 auto; background: var(--surface); box-shadow: var(--shadow-pop); }
 .dt-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
 .dt-head h3 { margin: 0; font-size: 18px; font-weight: 400; }
 .dt-remove { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
@@ -1373,13 +1388,15 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     var on = C.added.indexOf(c.id) > -1;
     var cf = conflicts(c);
     // The whole card is one checkbox (like the benchmark radio rows): click anywhere to add or remove.
-    return '<label class="c-card' + (on ? ' on' : '') + '" id="cc-' + c.id + '">' +
+    // "Learn more" sits on top of the label (not inside it), so it opens details without toggling the card.
+    return '<div class="c-card' + (on ? ' on' : '') + '" id="cc-' + c.id + '"><label class="c-hit">' +
       '<input type="checkbox" class="c-check" id="cb-' + c.id + '" data-cid="' + c.id + '"' + (on ? ' checked' : '') + '>' +
       '<span class="c-body"><span class="c-name">' + esc(c.name) + '</span>' +
       '<span class="c-meta">' + esc(c.area + ' · ' + c.region + ' · ' + c.provider) + '</span>' +
       '<span class="c-desc">' + esc(c.desc) + '</span>' +
       (cf.length ? '<span class="tag-warn">' + ICON.warn + 'Conflicts with exclusions: ' + esc(cf.join(', ')) + '</span>' : '') +
-      '</span></label>';
+      '</span></label>' +
+      '<button type="button" class="linkbtn c-more" data-learn="' + c.id + '" aria-haspopup="dialog">Learn more</button></div>';
   }
 
   function item(label, sub, warn, act, id) {
@@ -1533,6 +1550,55 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   });
 
   window.renderComp = renderComp;
+  // ---- Learn more: component details in a modal ------------------------------
+  // Native <dialog>: focus stays inside, Esc and the backdrop close it, focus returns to "Learn more".
+  var modal = document.createElement('dialog');
+  modal.className = 'modal';
+  modal.setAttribute('aria-labelledby', 'md-title');
+  document.body.appendChild(modal);
+  var modalFor = null;
+  function renderModal() {
+    var c = byId(modalFor);
+    var on = C.added.indexOf(c.id) > -1;
+    var cf = conflicts(c);
+    var kind = c.kind === 'mp' ? 'model portfolio' : 'building block';
+    modal.innerHTML = '<div class="md-head"><div><h3 id="md-title">' + esc(c.name) + '</h3>' +
+      '<div class="count">' + esc(c.area + ' · ' + c.region + ' · ' + c.provider) + '</div>' +
+      (cf.length ? '<span class="tag-warn">' + ICON.warn + 'Conflicts with exclusions: ' + esc(cf.join(', ')) + '</span>' : '') + '</div>' +
+      '<button type="button" class="icon-btn md-x" data-md="close" aria-label="Close">' + ICON.x + '</button></div>' +
+      '<div class="md-body">' + (window.compDetail ? window.compDetail(c) : '<p class="dt-sum">' + esc(c.desc) + '</p>') + '</div>' +
+      '<div class="md-foot">' + (on ? '<span class="md-state">' + ICON.check + 'In this portfolio</span>' : '') +
+      '<button type="button" class="btn" data-md="close">Close</button>' +
+      (on ? '<button type="button" class="btn" data-md="toggle">Remove ' + kind + '</button>'
+        : '<button type="button" class="btn btn-primary" data-md="toggle">Add ' + kind + '</button>') + '</div>';
+  }
+  root.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-learn]');
+    if (!t) return;
+    modalFor = t.getAttribute('data-learn');
+    renderModal();
+    modal.showModal();
+    modal.querySelector('.md-body').scrollTop = 0;
+  });
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) { modal.close(); return; } // backdrop
+    var t = e.target.closest('[data-md]');
+    if (!t) return;
+    if (t.getAttribute('data-md') === 'toggle') {
+      var id = modalFor;
+      C.added = C.added.indexOf(id) > -1 ? C.added.filter(function (x) { return x !== id; }) : C.added.concat([id]);
+      renderComp();
+    }
+    modal.close();
+  });
+  // Back to the card's Learn more (re-created when Add / Remove re-rendered the list); after the dialog's own focus restore.
+  modal.addEventListener('close', function () {
+    setTimeout(function () {
+      var b = document.querySelector('[data-learn="' + modalFor + '"]');
+      if (b) b.focus();
+    }, 0);
+  });
+
   window.COMP = { C: C, byId: byId, instBy: instBy, conflicts: conflicts }; // read by Component allocation
   renderComp();
 })();
@@ -1821,8 +1887,18 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     var h = '<div class="dt-head"><div><h3>' + esc(it.name) + '</h3><div class="count">' + esc(it.meta) + '</div></div>' +
       '<button type="button" class="linkbtn dt-remove" data-aact="remove" data-key="' + esc(it.key) + '">' + ICON.x + removeLabel + '</button></div>';
     if (it.comp) {
-      var c = it.comp;
-      var f = figures(c);
+      h += compDetail(it.comp);
+    } else if (it.kind === 'inst') {
+      h += '<p class="dt-sum">Single instrument held directly in the model portfolio. Price, currency and ESG data are shown in Simulation.</p>';
+    } else {
+      h += '<p class="dt-sum">Cash held in ' + esc(it.cash.ccy) + ' for liquidity.</p>';
+    }
+    return h;
+  }
+  // Component details (summary, figures, benchmark, risk/return, top 10): Allocation panel and the Learn more modal.
+  function compDetail(c) {
+    var h = '';
+    var f = figures(c);
       // Two balanced columns: benchmark + risk/return on the left, top 10 positions on the right.
       h += '<p class="dt-sum">' + esc(c.desc) + ' The currency risk is not hedged.</p>' +
         '<div class="stats">' + stat('Benchmark risk', f2(f.r3) + '%', '3 years') + stat('Benchmark return', f2(f.y3) + '%', '3 years') +
@@ -1837,13 +1913,9 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
           return [esc(p[0]), '<span class="isin">' + p[1] + '</span>', TOPW[i] + '%'];
         }), 2) +
         '</div></div>';
-    } else if (it.kind === 'inst') {
-      h += '<p class="dt-sum">Single instrument held directly in the model portfolio. Price, currency and ESG data are shown in Simulation.</p>';
-    } else {
-      h += '<p class="dt-sum">Cash held in ' + esc(it.cash.ccy) + ' for liquidity.</p>';
-    }
     return h;
   }
+  window.compDetail = compDetail;
 
   var allocRoot = document.getElementById('alloc');
   var STEP_HINT = '↑ ↓ or mouse wheel changes by 0.1 · with Shift by 1';
@@ -2528,11 +2600,12 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   }
   function card(state) {
     var on = state === 'selected' || state === 'conflict';
-    return '<div class="c-card' + (on ? ' on' : '') + (state === 'hover' ? ' is-hover' : '') + (state === 'focus' ? ' is-focus' : '') + '" style="width: 100%">' +
+    return '<div class="c-card' + (on ? ' on' : '') + (state === 'hover' ? ' is-hover' : '') + (state === 'focus' ? ' is-focus' : '') + '" style="width: 100%"><span class="c-hit">' +
       '<input type="checkbox" class="c-check" tabindex="-1"' + (on ? ' checked' : '') + ' aria-label="Select">' +
       '<span class="c-body"><span class="c-name">HOLT – MSCI Europe Proxy</span><span class="c-meta">Equity · Europe · HOLT</span>' +
       '<span class="c-desc">Quantitative proxy tracking the MSCI Europe index.</span>' +
-      (state === 'conflict' ? '<span class="tag-warn">' + I.warn + 'Conflicts with exclusions: Energy</span>' : '') + '</span></div>';
+      (state === 'conflict' ? '<span class="tag-warn">' + I.warn + 'Conflicts with exclusions: Energy</span>' : '') + '</span></span>' +
+      '<button type="button" class="linkbtn c-more" tabindex="-1">Learn more</button></div>';
   }
   function overviewDemo() {
     if (!window.DSX) return '';
@@ -2723,14 +2796,25 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         ['Click a grade to move the cut-off; click the first excluded grade again to remove the limit.'], ['Use the scale for unordered lists.'])));
 
     add('Components', 'c-card', 'Card', section('c-card', 'Components', 'Card',
-      'Catalogue items. The whole card is one checkbox — like the benchmark radio rows — so there is no separate Add button. Selected cards keep a white fill and gain the accent border.', 'Multi-select',
+      'Catalogue items. The whole card is one checkbox — like the benchmark radio rows — so there is no separate Add button. Selected cards keep a white fill and gain the accent border. “Learn more” opens the details in a modal with Add / Remove in its footer.', 'Multi-select',
       '<h3 class="ds-h3">States</h3><div class="ds-cards">' + [['Default', card()], ['Hover', card('hover')], ['Focus', card('focus')], ['Selected', card('selected')], ['With conflict', card('conflict')]].map(function (s) {
         return '<div><div class="ds-cap">' + s[0] + '</div>' + s[1] + '</div>';
       }).join('') + '</div>' + specsAndUsage([
         ['Padding', '14px 16px', null], ['Checkbox', '16px, accent-colour, aligned with the name, 10px gap', '--accent'], ['Border', '1px → selected: accent', '--panel-border'],
         ['Hover', 'whole card', '--surface-hover'], ['Focus', '2px ring around the card (keyboard only)', '--focus'], ['Name', 'Body strong 14 / 600', '--text'], ['Meta', 'Label 13', '--muted'],
-        ['Description', '13px, full text', '--ink-soft'], ['Grid', 'auto-fill, min 250px, 12px gap', null]],
+        ['Description', '13px, full text', '--ink-soft'], ['Learn more', 'link, bottom left under the text (38px in), 40px reserved; does not toggle', '--link'], ['Grid', 'auto-fill, min 250px, 12px gap', null]],
         ['Make the whole card the hit area; Space toggles when focused.', 'Use checkboxes for multi-select, radios for single choice (benchmarks).'], ['Add separate Add / Remove buttons inside the card.', 'Fill selected cards grey.'])));
+
+    add('Components', 'c-modal', 'Modal', section('c-modal', 'Components', 'Modal',
+      'Details on demand without leaving the screen (Learn more on catalogue cards). Native dialog: Esc and the backdrop close it, focus returns to the button that opened it.', '1 variant',
+      '<div class="ds-frame" style="margin-top: 16px; padding: 24px; background: rgba(28, 28, 28, 0.45)"><div class="modal-demo">' +
+        '<div class="md-head"><div><h3>HOLT – MSCI Europe Proxy</h3><div class="count">Equity · Europe · HOLT</div></div><span class="icon-btn md-x">' + I.x + '</span></div>' +
+        '<div class="md-body"><p class="dt-sum">Quantitative proxy tracking the MSCI Europe index using HOLT valuation metrics.</p></div>' +
+        '<div class="md-foot"><button type="button" class="btn" tabindex="-1">Close</button><button type="button" class="btn btn-primary" tabindex="-1">Add building block</button></div></div></div>' +
+      specsAndUsage([
+        ['Width', 'max 900px, 16px from the viewport edges', null], ['Height', 'max viewport − 64px; only the body scrolls', null], ['Backdrop', 'ink at 45%', '--ink-strong'],
+        ['Header', 'title 20 / 400, meta 13, close 32×32; divider below', '--divider'], ['Footer', 'actions right: Close (secondary) + one primary; state note left', '--accent'], ['Padding', '24px sides', null], ['Shadow', 'pop', '--shadow-pop']],
+        ['Offer the same action as the screen behind it (Add / Remove).', 'Return focus to the button that opened it.'], ['Stack modals.', 'Put forms or long flows in a modal.'])));
 
     add('Components', 'c-table', 'Data table', section('c-table', 'Components', 'Data table',
       'Positions and other dense data. Sticky header, tabular numbers, inline editing for weights.', '',
