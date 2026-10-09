@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model portfolio – Preferences</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #CC0000;
+  --accent-dark: #A30000;
+  --text: #333333;
+  --muted: #666666;
+  --line: #E6E6E6;
+  --panel-line: #E3E3E3;
+  --ex-bg: #F6D5D9;
+  --ex-bd: #E2A7AF;
+  --sg-bg: #E2E2E2;
+  --sg-bd: #CDCDCD;
+  --link: #0B6EA8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #F4F4F4; color: var(--text); font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 14px; line-height: 1.45; }
+a { color: var(--link); }
+a:hover { color: #08507A; }
+button { font: inherit; color: inherit; }
+
+.wrap { max-width: 1360px; margin: 0 auto; padding: 0 24px; }
+.app-header { background: #FFFFFF; border-bottom: 1px solid #DADADA; }
+.app-header .wrap { display: flex; align-items: stretch; gap: 48px; min-height: 56px; flex-wrap: wrap; }
+.logo { align-self: center; width: 88px; height: 26px; border: 1px dashed #A6A6A6; display: flex; align-items: center; justify-content: center; font-size: 11px; letter-spacing: 0.08em; color: #666666; }
+.app-nav { display: flex; align-items: center; border-bottom: 2px solid var(--accent); color: var(--text); text-decoration: none; font-size: 15px; }
+.app-nav:hover { color: var(--text); }
+
+.crumbs { font-size: 13px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 14px 0; }
+.crumbs a { text-decoration: none; }
+.crumbs .sep { color: #888888; }
+
+.panel { background: #FFFFFF; border: 1px solid #DADADA; margin-bottom: 40px; }
+.tabs { display: flex; gap: 0 32px; flex-wrap: wrap; padding: 0 20px; border-bottom: 1px solid var(--panel-line); }
+.tabs a { padding: 12px 0 10px; color: var(--text); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs a:hover { border-bottom-color: #BBBBBB; }
+.tabs a[aria-current="page"] { border-bottom-color: var(--accent); }
+
+section { padding: 20px 24px 22px; }
+.sec-border { border-bottom: 1px solid var(--panel-line); }
+h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
+.desc { margin: 0; color: #555555; }
+.fields { display: flex; gap: 16px 40px; flex-wrap: wrap; align-items: flex-end; margin-top: 16px; }
+.f { display: flex; flex-direction: column; gap: 4px; }
+.f-inline { display: flex; align-items: center; gap: 10px; }
+.input { height: 32px; border: 1px solid #CCCCCC; padding: 0 10px; font: inherit; color: var(--text); background: #FFFFFF; }
+.input:focus { outline: none; border-color: #555555; }
+
+.ex-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.linkbtn { border: 0; background: transparent; color: var(--link); cursor: pointer; padding: 0 4px; height: 28px; }
+.linkbtn:hover { text-decoration: underline; }
+
+.cols { display: flex; flex-wrap: wrap; gap: 0 28px; margin-top: 8px; }
+.main-col { flex: 999 1 720px; min-width: 0; }
+.side-col { flex: 1 1 320px; min-width: 0; border-left: 1px solid var(--panel-line); padding: 14px 0 14px 28px; }
+
+.row { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row-label { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.count { font-size: 13px; color: var(--muted); }
+.line { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-start; }
+
+.combo { position: relative; flex: 0 0 220px; }
+.search { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 2px 0 8px; border: 1px solid #CCCCCC; background: #FFFFFF; }
+.search.open, .search:focus-within { border-color: #555555; }
+.search input { flex: 1; min-width: 0; height: 100%; border: 0; font: inherit; color: var(--text); background: transparent; outline: none; }
+.icon-btn { width: 28px; height: 28px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; color: #555555; cursor: pointer; padding: 0; }
+.icon-btn:hover { background: #EEEEEE; }
+
+.sugs { flex: 1 1 300px; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; min-height: 32px; }
+.chip { display: inline-flex; align-items: center; height: 28px; border: 1px solid; }
+.chip-sg { gap: 6px; padding: 0 10px 0 8px; background: var(--sg-bg); border-color: var(--sg-bd); cursor: pointer; }
+.chip-sg:hover { background: #CFCFCF; }
+.chip-ex { gap: 4px; padding: 0 3px 0 10px; background: var(--ex-bg); border-color: var(--ex-bd); }
+.x { width: 22px; height: 22px; border: 0; background: transparent; color: #555555; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+.x:hover { background: #EDB9BF; }
+.selected { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+
+.dd { position: absolute; top: 33px; left: 0; min-width: 100%; width: 280px; z-index: 20; background: #FFFFFF; border: 1px solid #C4C4C4; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10); }
+.dd-list { max-height: 232px; overflow-y: auto; padding: 2px 0; }
+.opt { display: flex; align-items: center; gap: 8px; padding: 0 10px; min-height: 32px; cursor: pointer; }
+.opt:hover { background: #F2F2F2; }
+.opt.on { background: #FBEBED; }
+.opt strong { font-weight: 600; }
+.opt input, .check input { width: 14px; height: 14px; margin: 0; accent-color: var(--accent); }
+.sub { color: #777777; margin-left: 8px; }
+.dd-foot { display: flex; justify-content: flex-end; padding: 4px 6px; border-top: 1px solid #EEEEEE; }
+.empty { padding: 8px 10px; color: var(--muted); }
+
+.scale-line { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+.scale { display: flex; align-items: center; min-width: 0; padding-left: 1px; }
+.scale-rating { flex: 0 1 530px; }
+.scale-esg { max-width: 340px; }
+.seg { flex: 1 1 0; min-width: 0; height: 28px; margin-left: -1px; border: 1px solid #CCCCCC; background: #FFFFFF; cursor: pointer; padding: 0; }
+.seg.ex { background: var(--ex-bg); border-color: var(--ex-bd); }
+.seg:hover { position: relative; z-index: 1; outline: 1px solid #555555; outline-offset: -1px; }
+.cut { flex: 0 0 auto; width: 3px; height: 40px; background: var(--accent); margin: 0 4px 0 3px; position: relative; z-index: 2; }
+.check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+.inst-search { position: relative; }
+.inst-search .search { padding-right: 8px; }
+.inst-search .dd { width: auto; right: 0; }
+.res { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px; border: 0; background: #FFFFFF; text-align: left; cursor: pointer; }
+.res:hover { background: #F2F2F2; }
+.res:disabled { cursor: default; color: #888888; background: #FFFFFF; }
+.res .grow { flex: 1; min-width: 0; }
+.inst-list { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.inst { display: flex; align-items: center; gap: 8px; min-height: 28px; padding: 0 3px 0 10px; background: var(--ex-bg); border: 1px solid var(--ex-bd); }
+.inst .grow { flex: 1; min-width: 0; }
+.muted { color: #777777; }
+
+.actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; padding: 14px 24px; border-top: 1px solid var(--panel-line); }
+.btn { height: 34px; padding: 0 18px; border: 1px solid #BBBBBB; background: #FFFFFF; cursor: pointer; }
+.btn:hover { background: #F2F2F2; }
+.btn-primary { border: 0; background: var(--accent); color: #FFFFFF; }
+.btn-primary:hover { background: var(--accent-dark); }
+
+:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+.search input:focus-visible { outline: none; }
+
+@media (max-width: 760px) {
+  .wrap { padding: 0 16px; }
+  section { padding: 18px 16px; }
+  .side-col { border-left: 0; padding: 14px 0 0; border-top: 1px solid var(--panel-line); }
+  .combo { flex: 1 1 100%; }
+  .dd { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="wrap">
+    <div class="logo">[LOGO]</div>
+    <a class="app-nav" href="#top">Model portfolio book</a>
+  </div>
+</header>
+
+<main id="top" class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="#top">Model portfolio book</a>
+    <span class="sep" aria-hidden="true">›</span>
+    <span>NEW Model portfolio</span>
+  </nav>
+
+  <div class="panel">
+    <nav class="tabs" aria-label="Model portfolio sections">
+      <a href="#top">Model portfolio data</a>
+      <a href="#top" aria-current="page">Preferences</a>
+      <a href="#top">Component selection</a>
+      <a href="#top">Component allocation</a>
+      <a href="#top">Simulation</a>
+      <a href="#top">Reporting</a>
+    </nav>
+
+    <section class="sec-border">
+      <h2>Preferences</h2>
+      <p class="desc">Please configure the preferences specific to the model portfolio in the fields below.</p>
+      <div class="fields">
+        <div class="f">
+          <label for="minpos">Minimum position size</label>
+          <div class="f-inline">
+            <input id="minpos" class="input" value="0.5" inputmode="decimal" style="width: 150px">
+            <span>%</span>
+          </div>
+        </div>
+        <div class="f">
+          <label for="maxinst">Maximum number of instruments</label>
+          <input id="maxinst" class="input" value="150" inputmode="numeric" style="width: 270px">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="ex-head">
+        <div>
+          <h2>Exclusions</h2>
+          <p class="desc">Please configure the exclusionary preferences specific to the model portfolio in the fields below.</p>
+        </div>
+        <button type="button" class="linkbtn" data-act="clearall">Clear all</button>
+      </div>
+      <div class="cols" id="ex"></div>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="btn">Back</button>
+      <button type="button" class="btn btn-primary">Next</button>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- Data -------------------------------------------------------------
+  var CATS = [
+    { id: 'geography', label: 'Geography exclusions', ph: 'Add region…', options: [
+      { id: 'em', label: 'Emerging markets' }, { id: 'apac', label: 'APAC' }, { id: 'uk', label: 'United Kingdom' },
+      { id: 'na', label: 'North America' }, { id: 'ez', label: 'Eurozone' }, { id: 'latam', label: 'Latin America' },
+      { id: 'mea', label: 'Middle East & Africa' }, { id: 'ch', label: 'Switzerland' }, { id: 'jp', label: 'Japan' }
+    ], suggested: ['apac', 'uk', 'na', 'ez'] },
+    { id: 'sector', label: 'Sector exclusions', ph: 'Add sector…', options: [
+      { id: 'comm', label: 'Communications' }, { id: 'cons', label: 'Consumers' }, { id: 'energy', label: 'Energy' },
+      { id: 'fin', label: 'Financials' }, { id: 'health', label: 'Health care' }, { id: 'ind', label: 'Industrials' },
+      { id: 'it', label: 'Technology' }, { id: 'mat', label: 'Materials' }, { id: 're', label: 'Real estate' },
+      { id: 'util', label: 'Utilities' }
+    ], suggested: ['comm', 'cons', 'fin'] },
+    { id: 'currency', label: 'Currency exclusions', ph: 'Add currency…', options: [
+      { id: 'EUR', label: 'EUR', sub: 'Euro' }, { id: 'USD', label: 'USD', sub: 'US dollar' }, { id: 'GBP', label: 'GBP', sub: 'Pound sterling' },
+      { id: 'JPY', label: 'JPY', sub: 'Japanese yen' }, { id: 'CHF', label: 'CHF', sub: 'Swiss franc' }, { id: 'AUD', label: 'AUD', sub: 'Australian dollar' },
+      { id: 'CAD', label: 'CAD', sub: 'Canadian dollar' }, { id: 'HKD', label: 'HKD', sub: 'Hong Kong dollar' }, { id: 'SGD', label: 'SGD', sub: 'Singapore dollar' },
+      { id: 'SEK', label: 'SEK', sub: 'Swedish krona' }, { id: 'NOK', label: 'NOK', sub: 'Norwegian krone' }, { id: 'DKK', label: 'DKK', sub: 'Danish krone' }
+    ], suggested: ['USD', 'JPY', 'GBP', 'AUD', 'CAD', 'CHF', 'HKD', 'SGD'] },
+    { id: 'category', label: 'Instrument category exclusions', ph: 'Add category…', options: [
+      { id: 'eq', label: 'Equities' }, { id: 'bond', label: 'Bonds' }, { id: 'fund', label: 'Investment funds' },
+      { id: 'etf', label: 'ETFs' }, { id: 'struct', label: 'Structured products' }, { id: 'deriv', label: 'Derivatives' },
+      { id: 'comdty', label: 'Commodities' }, { id: 'hedge', label: 'Hedge funds' }, { id: 'pm', label: 'Private markets' }
+    ], suggested: ['struct', 'hedge', 'pm'] }
+  ];
+  var RATINGS = ['Aaa', 'Aa', 'A', 'Baa', 'Ba', 'B', 'Caa', 'Ca–C'];
+  var ESG = ['1', '2', '3', '4', '5'];
+  var INSTR = [
+    { isin: 'US0378331005', name: 'Apple Inc.' },
+    { isin: 'FR0000120271', name: 'TotalEnergies SE' },
+    { isin: 'GB00BP6MXD84', name: 'Shell plc' },
+    { isin: 'US30231G1022', name: 'Exxon Mobil Corp.' },
+    { isin: 'CH0038863350', name: 'Nestlé SA' },
+    { isin: 'US5949181045', name: 'Microsoft Corp.' }
+  ];
+  var SHOW = 4; // suggestions shown before "+N more"
+
+  // ---- State ------------------------------------------------------------
+  var S = {
+    sel: { geography: ['em'], sector: ['energy', 'ind'], currency: ['EUR', 'JPY', 'SGD', 'SEK', 'DKK', 'NOK'], category: ['deriv'] },
+    q: {},
+    open: null,
+    more: {},
+    rating: 4,
+    unrated: true,
+    esg: 2,
+    inst: ['US0378331005', 'FR0000120271'],
+    instQ: ''
+  };
+
+  // ---- Helpers ----------------------------------------------------------
+  var ICON = {
+    search: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#777" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>',
+    down: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>',
+    up: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg>',
+    x: '<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+    plus: '<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#555" stroke-width="2" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>'
+  };
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function cat(id) { return CATS.filter(function (c) { return c.id === id; })[0]; }
+  function optLabel(c, id) { return c.options.filter(function (o) { return o.id === id; })[0].label; }
+  function instName(isin) { return INSTR.filter(function (x) { return x.isin === isin; })[0].name; }
+  function query(c) { return S.open === c.id ? (S.q[c.id] || '') : ''; }
+  function matches(c) {
+    var ql = query(c).trim().toLowerCase();
+    var starts = function (o) { return ql && o.label.toLowerCase().indexOf(ql) === 0 ? 1 : 0; };
+    var list = c.options.filter(function (o) {
+      return !ql || o.label.toLowerCase().indexOf(ql) > -1 || (o.sub || '').toLowerCase().indexOf(ql) > -1;
+    }).sort(function (a, b) { return starts(b) - starts(a); });
+    return { ql: ql, list: list, starts: starts };
+  }
+  function toggle(catId, id) {
+    var cur = S.sel[catId];
+    S.sel[catId] = cur.indexOf(id) > -1 ? cur.filter(function (x) { return x !== id; }) : cur.concat([id]);
+  }
+
+  // ---- Templates --------------------------------------------------------
+  function listRow(c) {
+    var sel = S.sel[c.id];
+    var open = S.open === c.id;
+    var m = matches(c);
+    var sugg = c.suggested.filter(function (id) { return sel.indexOf(id) === -1; });
+    var expanded = !!S.more[c.id];
+    var visible = expanded ? sugg : sugg.slice(0, SHOW);
+
+    var h = '<div class="row">' +
+      '<div class="row-label"><label for="f-' + c.id + '">' + esc(c.label) + '</label>' +
+      '<span class="count">' + (sel.length ? sel.length + ' excluded' : '') + '</span></div>' +
+      '<div class="line"><div class="combo">' +
+      '<div class="search' + (open ? ' open' : '') + '">' + ICON.search +
+      '<input id="f-' + c.id + '" data-cat="' + c.id + '" value="' + esc(query(c)) + '" placeholder="' + esc(c.ph) + '" autocomplete="off" role="combobox" aria-expanded="' + open + '" aria-controls="dd-' + c.id + '">' +
+      '<button type="button" class="icon-btn" id="t-' + c.id + '" data-act="toggle" data-cat="' + c.id + '" aria-label="' + (open ? 'Close ' : 'Open ') + esc(c.label) + ' list">' + (open ? ICON.up : ICON.down) + '</button>' +
+      '</div>';
+
+    if (open) {
+      h += '<div class="dd" id="dd-' + c.id + '"><div class="dd-list" role="group" aria-label="' + esc(c.label) + ' options">';
+      m.list.forEach(function (o) {
+        var on = sel.indexOf(o.id) > -1;
+        var text = m.starts(o)
+          ? '<strong>' + esc(o.label.slice(0, m.ql.length)) + '</strong>' + esc(o.label.slice(m.ql.length))
+          : esc(o.label);
+        h += '<label class="opt' + (on ? ' on' : '') + '">' +
+          '<input type="checkbox" id="o-' + c.id + '-' + o.id + '" data-act="opt" data-cat="' + c.id + '" data-id="' + o.id + '"' + (on ? ' checked' : '') + '>' +
+          '<span>' + text + (o.sub ? '<span class="sub">' + esc(o.sub) + '</span>' : '') + '</span></label>';
+      });
+      if (!m.list.length) h += '<div class="empty">No matches</div>';
+      h += '</div><div class="dd-foot"><button type="button" class="linkbtn" data-act="close">Done</button></div></div>';
+    }
+    h += '</div>';
+
+    if (sugg.length) {
+      h += '<div class="sugs">';
+      visible.forEach(function (id) {
+        var l = optLabel(c, id);
+        h += '<button type="button" class="chip chip-sg" data-act="add" data-cat="' + c.id + '" data-id="' + id + '" aria-label="Exclude ' + esc(l) + '">' + ICON.plus + esc(l) + '</button>';
+      });
+      if (sugg.length > SHOW) {
+        h += '<button type="button" class="linkbtn" id="m-' + c.id + '" data-act="more" data-cat="' + c.id + '" aria-expanded="' + expanded + '">' +
+          (expanded ? 'Show less' : '+' + (sugg.length - SHOW) + ' more') + '</button>';
+      }
+      h += '</div>';
+    }
+    h += '</div>';
+
+    if (sel.length) {
+      h += '<div class="selected">';
+      sel.forEach(function (id) {
+        var l = optLabel(c, id);
+        h += '<span class="chip chip-ex">' + esc(l) +
+          '<button type="button" class="x" data-act="remove" data-cat="' + c.id + '" data-id="' + id + '" aria-label="Remove ' + esc(l) + '">' + ICON.x + '</button></span>';
+      });
+      h += '</div>';
+    }
+    return h + '</div>';
+  }
+
+  function scale(labels, isExcluded, cutAt, act) {
+    return labels.map(function (label, i) {
+      var ex = isExcluded(i);
+      return (i > 0 && i === cutAt ? '<span class="cut" aria-hidden="true"></span>' : '') +
+        '<button type="button" class="seg' + (ex ? ' ex' : '') + '" id="' + act + '-' + i + '" data-act="' + act + '" data-i="' + i + '" aria-pressed="' + ex + '" aria-label="' + esc(label) + (ex ? ', excluded' : ', allowed') + '">' + esc(label) + '</button>';
+    }).join('');
+  }
+
+  function ratingRow() {
+    var limited = S.rating < RATINGS.length;
+    return '<div class="row">' +
+      '<div class="row-label"><span id="rating-label">Credit rating exclusions</span>' +
+      '<span class="count">' + (limited ? RATINGS[S.rating] + ' and below excluded' : 'Click a grade to exclude it and everything below') + '</span></div>' +
+      '<div class="scale-line"><div class="scale scale-rating" role="group" aria-labelledby="rating-label">' +
+      scale(RATINGS, function (i) { return i >= S.rating; }, S.rating, 'rating') +
+      '</div><label class="check"><input type="checkbox" id="unrated" data-act="unrated"' + (S.unrated ? ' checked' : '') + '>Also exclude not rated</label></div></div>';
+  }
+
+  function esgRow() {
+    return '<div class="row">' +
+      '<div class="row-label"><span id="esg-label">ESG exclusions</span>' +
+      '<span class="count">' + (S.esg > 0 ? 'Score ' + ESG[S.esg - 1] + ' and below excluded' : 'Click a score to exclude it and everything below') + '</span></div>' +
+      '<div class="scale scale-esg" role="group" aria-labelledby="esg-label">' +
+      scale(ESG.map(function (s) { return 'Score ' + s; }), function (i) { return i < S.esg; }, S.esg, 'esg') +
+      '</div></div>';
+  }
+
+  function instCol() {
+    var iq = S.instQ.trim().toLowerCase();
+    var h = '<div class="side-col">' +
+      '<div class="row-label"><label for="inst-q">Excluded instruments</label>' +
+      '<span class="count">' + (S.inst.length ? S.inst.length + ' excluded' : '') + '</span></div>' +
+      '<div class="inst-search"><div class="search">' + ICON.search +
+      '<input id="inst-q" data-act="instq" value="' + esc(S.instQ) + '" placeholder="ISIN, instrument ID, instrument name…" autocomplete="off"></div>';
+    if (iq) {
+      var res = INSTR.filter(function (x) {
+        return x.isin.toLowerCase().indexOf(iq) > -1 || x.name.toLowerCase().indexOf(iq) > -1;
+      });
+      h += '<div class="dd">';
+      res.forEach(function (x) {
+        var already = S.inst.indexOf(x.isin) > -1;
+        h += '<button type="button" class="res" data-act="instadd" data-id="' + x.isin + '"' + (already ? ' disabled' : '') + '>' +
+          '<span class="grow">' + x.isin + ' ' + esc(x.name) + '</span>' +
+          (already ? '<span class="muted" style="font-size: 13px">Already excluded</span>' : '') + '</button>';
+      });
+      if (!res.length) h += '<div class="empty">No matches</div>';
+      h += '</div>';
+    }
+    h += '</div><div class="inst-list">';
+    S.inst.forEach(function (isin) {
+      var n = instName(isin);
+      h += '<div class="inst"><span class="grow">' + isin + ' ' + esc(n) + '</span>' +
+        '<button type="button" class="x" data-act="instremove" data-id="' + isin + '" aria-label="Remove ' + esc(n) + '">' + ICON.x + '</button></div>';
+    });
+    if (!S.inst.length) h += '<span class="muted">No instruments excluded</span>';
+    return h + '</div></div>';
+  }
+
+  // ---- Render (keeps focus and caret across re-renders) -----------------
+  var root = document.getElementById('ex');
+  function render() {
+    var a = document.activeElement;
+    var fid = a && root.contains(a) ? a.id : null;
+    var caret = fid && a.type === 'text' ? [a.selectionStart, a.selectionEnd] : null;
+    root.innerHTML = '<div class="main-col">' + CATS.map(listRow).join('') + ratingRow() + esgRow() + '</div>' + instCol();
+    if (fid) {
+      var el = document.getElementById(fid);
+      if (el) {
+        el.focus({ preventScroll: true });
+        if (caret && el.setSelectionRange) { try { el.setSelectionRange(caret[0], caret[1]); } catch (e) { /* not a text field */ } }
+      }
+    }
+  }
+
+  // ---- Events -----------------------------------------------------------
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-act]');
+    var act = t && t.getAttribute('data-act');
+    var c = t && t.getAttribute('data-cat');
+    var id = t && t.getAttribute('data-id');
+
+    // Click outside an open list closes it.
+    if (S.open && !e.target.closest('.combo')) { S.open = null; S.q = {}; render(); }
+    if (!act || act === 'opt' || act === 'unrated' || act === 'instq') return;
+
+    if (act === 'toggle') { S.open = S.open === c ? null : c; S.q = {}; }
+    else if (act === 'close') { S.open = null; S.q = {}; }
+    else if (act === 'add' || act === 'remove') { toggle(c, id); }
+    else if (act === 'more') { S.more[c] = !S.more[c]; }
+    else if (act === 'rating') { var r = +t.getAttribute('data-i'); S.rating = r === S.rating ? RATINGS.length : r; }
+    else if (act === 'esg') { var g = +t.getAttribute('data-i'); S.esg = g === S.esg - 1 ? 0 : g + 1; }
+    else if (act === 'instadd') { if (S.inst.indexOf(id) === -1) S.inst.push(id); S.instQ = ''; }
+    else if (act === 'instremove') { S.inst = S.inst.filter(function (x) { return x !== id; }); }
+    else if (act === 'clearall') {
+      CATS.forEach(function (k) { S.sel[k.id] = []; });
+      S.q = {}; S.open = null; S.more = {}; S.rating = RATINGS.length; S.unrated = false; S.esg = 0; S.inst = []; S.instQ = '';
+    }
+    render();
+  });
+
+  root.addEventListener('change', function (e) {
+    var act = e.target.getAttribute('data-act');
+    if (act === 'opt') { toggle(e.target.getAttribute('data-cat'), e.target.getAttribute('data-id')); render(); }
+    else if (act === 'unrated') { S.unrated = e.target.checked; render(); }
+  });
+
+  root.addEventListener('input', function (e) {
+    var c = e.target.getAttribute('data-cat');
+    if (c && e.target.type !== 'checkbox') { S.q[c] = e.target.value; S.open = c; render(); }
+    else if (e.target.getAttribute('data-act') === 'instq') { S.instQ = e.target.value; render(); }
+  });
+
+  root.addEventListener('focusin', function (e) {
+    var c = e.target.getAttribute('data-cat');
+    if (c && e.target.type !== 'checkbox' && S.open !== c) { S.open = c; S.q = {}; render(); }
+  });
+
+  root.addEventListener('keydown', function (e) {
+    var c = e.target.getAttribute('data-cat');
+    if (!c || e.target.type === 'checkbox') {
+      if (e.key === 'Escape' && S.open) { var back = S.open; S.open = null; S.q = {}; render(); document.getElementById('f-' + back).focus(); }
+      return;
+    }
+    var k = cat(c);
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      var first = matches(k).list.filter(function (o) { return S.sel[c].indexOf(o.id) === -1; })[0];
+      if (first) { S.sel[c] = S.sel[c].concat([first.id]); S.q[c] = ''; render(); }
+    } else if (e.key === 'Escape') {
+      S.open = null; S.q = {}; render();
+    } else if (e.key === 'Backspace' && !e.target.value && S.sel[c].length) {
+      S.sel[c] = S.sel[c].slice(0, -1); render();
+    } else if (e.key === 'ArrowDown' && S.open === c) {
+      e.preventDefault();
+      var firstOpt = document.querySelector('#dd-' + c + ' input');
+      if (firstOpt) firstOpt.focus();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
