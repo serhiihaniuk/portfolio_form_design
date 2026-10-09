@@ -1886,14 +1886,29 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   }
   allocRoot.addEventListener('keydown', stepWeight);
   allocRoot.addEventListener('wheel', stepWeight, { passive: false });
-  // Editing a weight selects its row; a slider selects on release so dragging is never interrupted.
+  // Selects a row without re-rendering, so a slider drag that just started on press keeps going.
+  function selectInPlace(key) {
+    var it = itemBy(key);
+    if (!it || key === A.sel) return;
+    A.sel = key;
+    var fill = document.getElementById('al-fill') || document.createElement('div');
+    fill.className = 'al-fill'; fill.id = 'al-fill';
+    [].forEach.call(allocRoot.querySelectorAll('.al-item'), function (row) {
+      var on = row.querySelector('.al-sel').getAttribute('data-key') === key;
+      row.classList.toggle('on', on);
+      row.querySelector('.al-sel').setAttribute('aria-pressed', on);
+      if (on) row.appendChild(fill);
+    });
+    allocRoot.querySelector('.al-detail').innerHTML = detail(it);
+    syncAlloc();
+  }
+  // Pressing a slider or focusing a weight field selects its row immediately.
+  allocRoot.addEventListener('pointerdown', function (e) {
+    if (e.target.type === 'range') selectInPlace(e.target.getAttribute('data-key'));
+  });
   allocRoot.addEventListener('focusin', function (e) {
     var key = e.target.getAttribute('data-key');
-    if (key && e.target.type === 'text' && key !== A.sel) { A.sel = key; renderAlloc(); }
-  });
-  allocRoot.addEventListener('change', function (e) {
-    var key = e.target.getAttribute('data-key');
-    if (key && e.target.type === 'range' && key !== A.sel) { A.sel = key; renderAlloc(); }
+    if (key && (e.target.type === 'text' || e.target.type === 'range')) selectInPlace(key);
   });
   allocRoot.addEventListener('focusout', function (e) {
     var key = e.target.getAttribute('data-key');
