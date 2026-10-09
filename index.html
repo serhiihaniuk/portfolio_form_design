@@ -422,6 +422,20 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .ver-badge { padding: 1px 8px; font-size: 12px; font-weight: 400; color: var(--text); background: var(--tag-bg); }
 .ver-note { display: flex; align-items: center; gap: 6px; padding-bottom: 10px; font-size: 13px; color: var(--muted); }
 .ver-bar + #sim-ov .ov3 { margin-top: 0; border-top: 0; }
+.ver-bar { justify-content: flex-start; column-gap: 28px; }
+.ver-note { margin-left: auto; }
+.ver-tools { display: flex; align-items: center; padding-bottom: 8px; }
+
+/* Compact overview: same columns, two lines each (title + bar, one line of content). */
+.ov3.compact .ov-sec { padding-top: 10px; padding-bottom: 10px; }
+.ov3.compact .ov-title { margin-bottom: 2px; }
+.ovc-bar { flex: 1 1 auto; display: flex; gap: 2px; max-width: 360px; height: 8px; margin-left: 16px; background: var(--track); }
+.ovc-bar span { display: block; height: 100%; }
+.ovc-line { display: flex; flex-wrap: wrap; gap: 2px 16px; min-width: 0; line-height: 1.6; }
+.ovc-key { white-space: nowrap; }
+.ovc-key .sw { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; vertical-align: -1px; }
+.ovc-key strong { font-weight: 600; }
+.ovc-ellipsis { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 /* Simulation */
 .sim-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; margin-top: 16px; }
@@ -1519,7 +1533,8 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   }
 
   // ---- Overview strip (Component allocation + Simulation) -------------------
-  var OV = { hidden: { alloc: false, sim: false } };
+  // Full overview by default; "Compact view" shrinks it to two lines per column instead of hiding it.
+  var OV = { compact: { alloc: false, sim: false } };
   var PASS = 4; // a check below this score counts as failed and is always listed
 
   // Exclusions as one short line; long lists become counts ("6 currencies").
@@ -1598,7 +1613,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   }
 
   function overview(view, rows) {
-    if (OV.hidden[view]) return '';
+    if (OV.compact[view]) return overviewCompact(view, rows);
     var failed = CHECKS.filter(function (q) { return q[1] < PASS; });
     var excl = exclusionSummary();
     var facts = [esc(document.getElementById('mpccy').value), 'Standard', 'Min. investment 1&#39;000&#39;000.00', 'Luxembourg and Italy'];
@@ -1618,10 +1633,43 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       '</dl></div>' +
       '</div>';
   }
+  // Same three columns, two lines each: title (+ allocation bar) and one line of content.
+  function overviewCompact(view, rows) {
+    var focus = view === 'sim' && P.mode !== 'current' ? 1 : 0;
+    var f = rows[focus].alloc, other = rows[1 - focus].alloc;
+    var inUse = CLASSES.filter(function (c) { return f[c] > 0.004; });
+    var bar = inUse.map(function (c) {
+      return '<span style="width: ' + Math.min(100, f[c]) + '%; background: ' + COLORS[c] + '" title="' + c + ' ' + pct(f[c]) + '"></span>';
+    }).join('');
+    var legend = CLASSES.filter(function (c) { return f[c] > 0.004 || other[c] > 0.004; }).map(function (c) {
+      var moved = view === 'sim' && focus === 1 && Math.abs(f[c] - other[c]) >= 0.05;
+      return '<span class="ovc-key"><span class="sw" style="background: ' + COLORS[c] + '"></span>' + c + ' ' +
+        (moved ? '<span class="muted">' + pct(other[c]) + ' →</span> ' : '') + '<strong>' + pct(f[c]) + '</strong></span>';
+    }).join('');
+    var failed = CHECKS.filter(function (q) { return q[1] < PASS; });
+    var excl = exclusionSummary();
+    var pfLine = [esc(document.getElementById('mpccy').value), 'Standard', esc(window.getBenchName ? window.getBenchName() : '')].join(' · ') +
+      ' · Exclusions: ' + (excl.length ? esc(excl.join(' · ')) : 'none');
+    return '<div class="ov3 compact">' +
+      '<div class="ov-sec"><div class="ov-title"><span>Asset allocation</span><span class="ovc-bar" role="img" aria-label="' + rows[focus].label + ': ' +
+        inUse.map(function (c) { return c + ' ' + pct(f[c]); }).join(', ') + '">' + bar + '</span></div>' +
+        '<div class="ovc-line">' + legend + '</div></div>' +
+      '<div class="ov-sec"><div class="ov-title"><span>Quality checks</span></div>' +
+        '<div class="ovc-line"><span class="ov-status' + (failed.length ? ' qc-fail' : '') + '">' +
+        (failed.length ? ICON.warn + failed.length + ' of ' + CHECKS.length + ' failed: ' + failed.map(function (q) { return q[0]; }).join(', ')
+          : ICON.check + CHECKS.length + ' of ' + CHECKS.length + ' passed') + '</span></div></div>' +
+      '<div class="ov-sec"><div class="ov-title"><span>Portfolio</span><button type="button" class="linkbtn ov-link" data-ov="edit">Edit exclusions</button></div>' +
+        '<div class="ovc-line"><span class="ovc-ellipsis" title="' + pfLine + '">' + pfLine + '</span></div></div>' +
+      '</div>';
+  }
+  function ovToggle(view) {
+    return '<button type="button" class="linkbtn ov-toggle" data-ov="toggle" data-view="' + view + '" aria-pressed="' + OV.compact[view] + '">' +
+      (OV.compact[view] ? 'Full view' : 'Compact view') + '</button>';
+  }
+  // Simulation carries the overview toggle right next to its Current / New tabs, above the overview it controls.
   function head(view, title, desc, tools) {
     return '<div class="ov-head"><div><h2>' + title + '</h2><p class="desc">' + desc + '</p></div>' +
-      '<div class="ov-head-tools">' + (tools || '') +
-      '<button type="button" class="linkbtn" data-ov="toggle" data-view="' + view + '">' + (OV.hidden[view] ? 'Show overview' : 'Hide overview') + '</button></div></div>';
+      '<div class="ov-head-tools">' + (tools || '') + (view === 'sim' ? '' : ovToggle(view)) + '</div></div>';
   }
 
   // ---- Component allocation --------------------------------------------------
@@ -2084,6 +2132,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     var verBar = '<div class="ver-bar"><div class="ver-tabs" role="group" aria-label="Portfolio version">' +
       '<button type="button" class="ver-tab" id="sm-current" data-pact="mode" data-row="current" aria-pressed="' + cur + '">Current</button>' +
       '<button type="button" class="ver-tab" id="sm-new" data-pact="mode" data-row="new" aria-pressed="' + !cur + '">New<span class="ver-badge" id="sm-new-n">' + changesLabel() + '</span></button></div>' +
+      '<div class="ver-tools">' + ovToggle('sim') + '</div>' +
       (cur ? '<div class="ver-note">' + ICON.info + '<span>Read-only — the portfolio as it is today.</span>' +
         '<button type="button" class="linkbtn ov-link" data-pact="mode" data-row="new">Switch to New</button></div>' : '') + '</div>';
     var h = head('sim', 'Simulation <span class="muted">' + esc(document.getElementById('mpname').value) + '</span>',
@@ -2177,14 +2226,14 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     var what = t.getAttribute('data-ov');
     if (what === 'edit') { window.showTab('preferences'); return; }
     var v = t.getAttribute('data-view');
-    OV.hidden[v] = !OV.hidden[v];
+    OV.compact[v] = !OV.compact[v];
     renderAlloc();
     renderSim();
   });
 
   window.renderAlloc = renderAlloc;
   window.renderSim = renderSim;
-  window.DSX = { allocBlock: allocBlock, checkList: checkList }; // live demos on the Design system page
+  window.DSX = { allocBlock: allocBlock, checkList: checkList, compact: function (rows) { return overviewCompact('sim', rows); } }; // live demos on the Design system page
 })();
 </script>
 <script>
@@ -2633,8 +2682,9 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         ['Hide Back on the first step.', 'Label the last step’s primary “Publish”.'], ['Add more than one primary.'])));
 
     add('Components', 'c-overview', 'Overview strip', section('c-overview', 'Components', 'Overview strip',
-      'Summary above allocation and simulation: allocation donut + comparison, quality checks, portfolio facts. Collapsible with “Hide overview”.', 'Live',
+      'Summary above allocation and simulation: allocation donut + comparison, quality checks, portfolio facts. “Compact view” shrinks it to two lines per column (title + allocation bar, one line of content); “Full view” brings the donut back. Full is the default.', 'Live',
       '<div class="ds-frame" style="margin-top: 16px" id="ds-ov">' + overviewDemo() + '</div>' +
+      '<div class="ds-frame" style="margin-top: 12px" id="ds-ovc">' + (window.DSX ? window.DSX.compact([{ label: 'Current', alloc: { Equity: 60, Bonds: 25, Alternatives: 10, Liquidity: 5 } }, { label: 'New', alloc: { Equity: 55, Bonds: 30, Alternatives: 10, Liquidity: 5 } }]) : '') + '</div>' +
       specsAndUsage([['Columns', '1.3fr | 0.8fr | 1fr, 24px padding, dividers', '--panel-line'], ['Donut', '172–240px, takes the free width; ring 14/112, 2px gaps; centre = largest class', null], ['Legend table', 'only as wide as its content, 20px between columns', null],
         ['Chart colours', 'categorical slots 1–4, validated for colour blindness', '--chart-1'], ['Legend table', '13px rows of 24px; the column shown in the donut is bold', null],
         ['Change column', 'muted, “—” when unchanged', '--muted'], ['Quality checks', '24px rows; 5 dashes filling a min 96px column, 4px high, snapped to whole pixels; one per point', '--ink-soft'], ['Row rhythm', 'all three columns share 24px rows and dividers', '--divider']],
