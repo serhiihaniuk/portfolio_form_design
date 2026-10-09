@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Model portfolio – Preferences</title>
+<title>New model portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -121,14 +121,59 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .btn-primary { border: 0; background: var(--accent); color: #FFFFFF; }
 .btn-primary:hover { background: var(--accent-dark); }
 
+[hidden] { display: none !important; }
+
+/* Model portfolio data */
+.data-layout { display: flex; flex-wrap: wrap; }
+.data-fields { flex: 0 0 300px; min-width: 0; border-right: 1px solid var(--panel-line); }
+.data-fields .stack { display: flex; flex-direction: column; gap: 16px; margin-top: 20px; }
+.data-fields .input { width: 100%; }
+.data-bench { flex: 1 1 720px; min-width: 0; }
+.select { appearance: none; -webkit-appearance: none; padding-right: 32px; cursor: pointer;
+  background: #FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='none' stroke='%23555' stroke-width='1.6'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 10px center; }
+.bench { display: grid; grid-template-columns: 360px minmax(0, 1fr); grid-template-areas: "tools ." "items detail"; margin-top: 20px; }
+.bench-tools { grid-area: tools; padding-right: 20px; }
+.bench-tools .search { padding-right: 8px; }
+.bench-meta { font-size: 13px; color: var(--muted); margin: 10px 0 8px; }
+.bench-items { grid-area: items; min-width: 0; display: flex; flex-direction: column; border-top: 1px solid #EBEBEB; }
+.bench-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 20px 11px 12px; border-bottom: 1px solid #EBEBEB; background: #FFFFFF; cursor: pointer; }
+.bench-item:hover { background: #FAFAFA; }
+/* Selected row shares the panel's grey and runs straight into it. */
+.bench-item.on, .bench-item.on:hover { background: #F3F3F3; }
+.bench-item input { width: 15px; height: 15px; margin: 2px 0 0; flex: 0 0 auto; accent-color: var(--accent); cursor: pointer; }
+.bi-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.bi-prev { font-size: 13px; color: var(--muted); }
+.ccy-tag { font-size: 12px; color: #555555; background: #EDEDED; padding: 0 6px; line-height: 20px; flex: 0 0 auto; }
+.bench-detail { grid-area: detail; min-width: 0; padding: 20px 28px; background: #F3F3F3; }
+.bench-detail-inner { position: sticky; top: 16px; }
+.bench-detail h3 { margin: 0; font-size: 18px; font-weight: 400; }
+.note { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; padding: 8px 12px; background: #FFFFFF; border: 1px solid #E3E3E3; color: #444444; font-size: 13px; max-width: 620px; }
+.comp { margin-top: 16px; max-width: 620px; border: 1px solid #E3E3E3; background: #FFFFFF; }
+.comp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(80px, 200px) 64px; gap: 16px; align-items: center; min-height: 36px; padding: 0 12px; border-top: 1px solid #EEEEEE; }
+.comp-row:first-child { border-top: 0; }
+.comp-head { background: #F4F4F4; font-size: 13px; color: var(--muted); min-height: 32px; }
+.comp-total { font-weight: 600; background: #FAFAFA; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: #EEEEEE; }
+.bar span { display: block; height: 100%; background: #8A8A8A; }
+
 :focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
 .search input:focus-visible { outline: none; }
 
+@media (max-width: 1180px) {
+  .data-fields { flex: 1 1 100%; border-right: 0; border-bottom: 1px solid var(--panel-line); }
+  .data-fields .stack { flex-direction: row; flex-wrap: wrap; gap: 16px 24px; margin-top: 16px; }
+  .data-fields .f { flex: 0 1 260px; }
+}
+
 @media (max-width: 760px) {
+  .bench { grid-template-columns: minmax(0, 1fr); grid-template-areas: "tools" "items" "detail"; }
+  .bench-tools { padding-right: 0; }
   .wrap { padding: 0 16px; }
   section { padding: 18px 16px; }
   .side-col { border-left: 0; padding: 14px 0 0; border-top: 1px solid var(--panel-line); }
   .combo { flex: 1 1 100%; }
+  .bench-detail { margin-top: 12px; padding: 16px; }
 }
 </style>
 </head>
@@ -150,14 +195,47 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 
   <div class="panel">
     <nav class="tabs" aria-label="Model portfolio sections">
-      <a href="#top">Model portfolio data</a>
-      <a href="#top" aria-current="page">Preferences</a>
-      <a href="#top">Component selection</a>
-      <a href="#top">Component allocation</a>
-      <a href="#top">Simulation</a>
-      <a href="#top">Reporting</a>
+      <a href="#data" data-tab="data" aria-current="page">Model portfolio data</a>
+      <a href="#preferences" data-tab="preferences">Preferences</a>
+      <a href="#top" data-tab="">Component selection</a>
+      <a href="#top" data-tab="">Component allocation</a>
+      <a href="#top" data-tab="">Simulation</a>
+      <a href="#top" data-tab="">Reporting</a>
     </nav>
 
+    <div id="view-data" class="data-layout">
+      <section class="data-fields">
+        <h2>Model portfolio data</h2>
+        <p class="desc">Please enter the data specific to the model portfolio.</p>
+        <div class="stack">
+          <div class="f">
+            <label for="mpcode">Model portfolio code</label>
+            <input id="mpcode" class="input" value="MP_STD_0001">
+          </div>
+          <div class="f">
+            <label for="mpname">Model portfolio name</label>
+            <input id="mpname" class="input" value="SMA - Global - Equities">
+          </div>
+          <div class="f">
+            <label for="mpccy">Currency</label>
+            <select id="mpccy" class="input select">
+              <option>EUR</option>
+              <option>USD</option>
+              <option>CHF</option>
+              <option>GBP</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="data-bench">
+        <h2>Benchmark</h2>
+        <p class="desc">Please select the benchmark associated to the model portfolio.</p>
+        <div class="bench" id="bench"></div>
+      </section>
+    </div>
+
+    <div id="view-prefs" hidden>
     <section class="sec-border">
       <h2>Preferences</h2>
       <p class="desc">Please configure the preferences specific to the model portfolio in the fields below.</p>
@@ -186,10 +264,11 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       </div>
       <div class="cols" id="ex"></div>
     </section>
+    </div>
 
     <div class="actions">
-      <button type="button" class="btn">Back</button>
-      <button type="button" class="btn btn-primary">Next</button>
+      <button type="button" class="btn" id="btn-back" hidden>Back</button>
+      <button type="button" class="btn btn-primary" id="btn-next">Next</button>
     </div>
   </div>
 </main>
@@ -482,6 +561,141 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   });
 
   render();
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+
+  // ---- Benchmarks (illustrative) -----------------------------------------
+  var BENCH = [
+    { id: 'glob-eq', name: 'SMA - Global Equity Benchmark', ccy: 'EUR', parts: [['MSCI World', 90], ['EUR Cash', 10]] },
+    { id: 'acwi', name: 'SMA - Global Equity ACWI Benchmark', ccy: 'EUR', parts: [['MSCI ACWI', 95], ['EUR Cash', 5]] },
+    { id: 'eu-eq', name: 'SMA - Europe Equity Benchmark', ccy: 'EUR', parts: [['MSCI Europe', 95], ['EUR Cash', 5]] },
+    { id: 'us-eq', name: 'SMA - US Equity Benchmark', ccy: 'USD', parts: [['S&P 500', 95], ['USD Cash', 5]] },
+    { id: 'em-eq', name: 'SMA - Emerging Markets Equity Benchmark', ccy: 'USD', parts: [['MSCI Emerging Markets', 100]] },
+    { id: 'ch-eq', name: 'SMA - Swiss Equity Benchmark', ccy: 'CHF', parts: [['Swiss Performance Index', 95], ['CHF Cash', 5]] },
+    { id: 'growth', name: 'SMA - Growth EUR Benchmark', ccy: 'EUR', parts: [['MSCI ACWI', 75], ['Bloomberg Global Aggregate (EUR hedged)', 20], ['EUR Cash', 5]] },
+    { id: 'balanced', name: 'SMA - Balanced EUR Benchmark', ccy: 'EUR', parts: [['MSCI World', 50], ['Bloomberg Euro Aggregate', 45], ['EUR Cash', 5]] },
+    { id: 'conservative', name: 'SMA - Conservative EUR Benchmark', ccy: 'EUR', parts: [['Bloomberg Euro Aggregate', 70], ['MSCI World', 25], ['EUR Cash', 5]] },
+    { id: 'income', name: 'SMA - Income EUR Benchmark', ccy: 'EUR', parts: [['Bloomberg Euro Corporate', 60], ['Bloomberg Euro Treasury', 30], ['EUR Cash', 10]] },
+    { id: 'glob-bond', name: 'SMA - Global Bonds EUR Hedged Benchmark', ccy: 'EUR', parts: [['Bloomberg Global Aggregate (EUR hedged)', 100]] }
+  ];
+  var B = { sel: 'glob-eq', q: '' };
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  var SEARCH_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#777" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>';
+  var INFO_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#555" stroke-width="1.4" aria-hidden="true" style="flex: 0 0 auto; margin-top: 2px"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2v4M8 4.8v.1"/></svg>';
+
+  var benchRoot = document.getElementById('bench');
+  var ccySelect = document.getElementById('mpccy');
+
+  function renderBench() {
+    var a = document.activeElement;
+    var fid = a && benchRoot.contains(a) ? a.id : null;
+    var caret = fid && a.type === 'text' ? [a.selectionStart, a.selectionEnd] : null;
+
+    var pccy = ccySelect.value;
+    var ql = B.q.trim().toLowerCase();
+    var list = BENCH.filter(function (b) {
+      return !ql || b.name.toLowerCase().indexOf(ql) > -1 ||
+        b.parts.some(function (p) { return p[0].toLowerCase().indexOf(ql) > -1; });
+    });
+    var sel = BENCH.filter(function (b) { return b.id === B.sel; })[0];
+
+    var h = '<div class="bench-tools">' +
+      '<div class="search">' + SEARCH_ICON +
+      '<input id="bench-q" value="' + esc(B.q) + '" placeholder="Search benchmarks or indices…" autocomplete="off" aria-label="Search benchmarks"></div>' +
+      '<div class="bench-meta">' + (ql ? list.length + ' of ' + BENCH.length + ' benchmarks' : BENCH.length + ' benchmarks') + '</div></div>' +
+      '<div class="bench-items" role="radiogroup" aria-label="Benchmark">';
+    list.forEach(function (b) {
+      var on = b.id === B.sel;
+      var preview = b.parts.map(function (p) { return p[0] + ' ' + p[1] + '%'; }).join(' · ');
+      h += '<label class="bench-item' + (on ? ' on' : '') + '">' +
+        '<input type="radio" name="bench" id="b-' + b.id + '" value="' + b.id + '"' + (on ? ' checked' : '') + '>' +
+        '<span class="bi-text"><span>' + esc(b.name) + '</span><span class="bi-prev">' + esc(preview) + '</span></span>' +
+        (b.ccy !== pccy ? '<span class="ccy-tag" title="Benchmark currency">' + b.ccy + '</span>' : '') +
+        '</label>';
+    });
+    if (!list.length) h += '<div class="muted" style="padding: 12px">No benchmarks match “' + esc(B.q) + '”</div>';
+    h += '</div>';
+
+    h += '<div class="bench-detail" aria-live="polite"><div class="bench-detail-inner">';
+    if (sel) {
+      var total = sel.parts.reduce(function (s, p) { return s + p[1]; }, 0);
+      h += '<h3>' + esc(sel.name) + '</h3>' +
+        '<div class="count" style="margin-top: 2px">Currency ' + sel.ccy + ' · ' + sel.parts.length + (sel.parts.length === 1 ? ' index' : ' indices') + '</div>';
+      if (sel.ccy !== pccy) {
+        h += '<div class="note">' + INFO_ICON + '<span>This benchmark is in ' + sel.ccy + ', while the model portfolio currency is ' + pccy + '.</span></div>';
+      }
+      h += '<div class="comp" role="table" aria-label="Benchmark composition">' +
+        '<div class="comp-row comp-head" role="row"><span role="columnheader">Index</span><span role="columnheader"><span class="sr-only" style="position: absolute; left: -9999px">Weight bar</span></span><span class="num" role="columnheader">Weight</span></div>';
+      sel.parts.forEach(function (p) {
+        h += '<div class="comp-row" role="row"><span role="cell">' + esc(p[0]) + '</span>' +
+          '<span role="cell" aria-hidden="true"><span class="bar" style="display: block"><span style="width: ' + p[1] + '%"></span></span></span>' +
+          '<span class="num" role="cell">' + p[1] + ' %</span></div>';
+      });
+      h += '<div class="comp-row comp-total" role="row"><span role="cell">Total</span><span role="cell"></span><span class="num" role="cell">' + total + ' %</span></div></div>';
+    } else {
+      h += '<p class="muted">Select a benchmark from the list.</p>';
+    }
+    h += '</div></div>';
+
+    benchRoot.innerHTML = h;
+    if (fid) {
+      var el = document.getElementById(fid);
+      if (el) {
+        el.focus({ preventScroll: true });
+        if (caret) { try { el.setSelectionRange(caret[0], caret[1]); } catch (e) { /* not a text field */ } }
+      }
+    }
+  }
+
+  benchRoot.addEventListener('change', function (e) {
+    if (e.target.name === 'bench') { B.sel = e.target.value; renderBench(); }
+  });
+  benchRoot.addEventListener('input', function (e) {
+    if (e.target.id === 'bench-q') { B.q = e.target.value; renderBench(); }
+  });
+  ccySelect.addEventListener('change', renderBench);
+
+  // ---- Tabs ---------------------------------------------------------------
+  var ORDER = ['data', 'preferences'];
+  var VIEWS = { data: 'view-data', preferences: 'view-prefs' };
+  var backBtn = document.getElementById('btn-back');
+  var nextBtn = document.getElementById('btn-next');
+  var current = 'data';
+
+  function showTab(t) {
+    if (!VIEWS[t]) return;
+    current = t;
+    Object.keys(VIEWS).forEach(function (k) { document.getElementById(VIEWS[k]).hidden = k !== t; });
+    document.querySelectorAll('.tabs a').forEach(function (a) {
+      if (a.getAttribute('data-tab') === t) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    backBtn.hidden = ORDER.indexOf(t) === 0;
+    if (history.replaceState) history.replaceState(null, '', '#' + t);
+  }
+
+  document.querySelector('.tabs').addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (!a) return;
+    e.preventDefault();
+    showTab(a.getAttribute('data-tab'));
+  });
+  backBtn.addEventListener('click', function () { showTab(ORDER[ORDER.indexOf(current) - 1]); window.scrollTo(0, 0); });
+  nextBtn.addEventListener('click', function () {
+    var n = ORDER[ORDER.indexOf(current) + 1];
+    if (n) { showTab(n); window.scrollTo(0, 0); }
+  });
+
+  renderBench();
+  showTab(location.hash === '#preferences' ? 'preferences' : 'data');
 })();
 </script>
 </body>
