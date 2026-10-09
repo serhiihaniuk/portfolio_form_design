@@ -147,6 +147,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .x { width: 22px; height: 22px; border: 0; background: transparent; color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
 .x:hover { background: var(--ex-hover); }
 .selected { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.sel-empty { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border: 1px dashed var(--panel-border); font-size: 13px; color: var(--muted); }
 
 .dd { position: absolute; top: 33px; left: 0; right: 0; z-index: 20; background: #FFFFFF; border: 1px solid var(--panel-border); box-shadow: var(--shadow-pop); }
 .dd-list { max-height: 232px; overflow-y: auto; padding: 2px 0; }
@@ -318,9 +319,10 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 
 /* Donut + comparison table */
 /* The chart is the first thing read on the strip: the donut takes nearly the full column height. */
-.donut-wrap { display: flex; align-items: center; gap: 24px; }
+/* Legend drops under the donut when the column is too narrow for both (never spills into Quality checks). */
+.donut-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; }
 /* The donut takes the free width (172–240px); the legend table only takes what its content needs. */
-.donut { flex: 1 1 172px; min-width: 172px; max-width: 240px; width: auto; height: auto; aspect-ratio: 1; }
+.donut { flex: 1 1 172px; min-width: 112px; max-width: 240px; width: auto; height: auto; aspect-ratio: 1; }
 .donut circle[stroke-dasharray] { transition: stroke-dasharray 0.25s, stroke-dashoffset 0.25s; }
 .donut circle[stroke-dasharray]:hover { stroke-width: 16; }
 .dn-num { font-size: 20px; font-weight: 600; fill: var(--text); }
@@ -337,7 +339,8 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 
 /* Quality checks: vertical list with dividers, as on the original */
 .qc-list { list-style: none; margin: 0; padding: 0; }
-.qc-list li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(96px, 0.8fr) 28px; gap: 12px; align-items: center; padding: 3px 0; border-top: 1px solid var(--divider); line-height: 1.45; }
+/* Check names are never cut; the dashes give way first. */
+.qc-list li { display: grid; grid-template-columns: minmax(max-content, 1fr) minmax(48px, 0.8fr) 28px; gap: 12px; align-items: center; padding: 3px 0; border-top: 1px solid var(--divider); line-height: 1.45; }
 /* Score as five short dashes (- - - - -), one filled per point */
 .score-dashes { display: block; width: 100%; height: 4px; }
 .score-dashes rect { fill: var(--track); }
@@ -419,7 +422,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .ver-tab { display: inline-flex; align-items: center; gap: 8px; margin-bottom: -1px; padding: 8px 0 9px; border: 0; border-bottom: 3px solid transparent; background: transparent; font: inherit; font-size: 16px; color: var(--muted); cursor: pointer; }
 .ver-tab:hover, .ds .ver-tab.is-hover { color: var(--text); border-bottom-color: var(--button-border); }
 .ver-tab[aria-pressed="true"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); cursor: default; }
-.ver-badge { padding: 1px 8px; font-size: 12px; font-weight: 400; color: var(--text); background: var(--tag-bg); }
+.ver-badge { white-space: nowrap; padding: 1px 8px; font-size: 12px; font-weight: 400; color: var(--text); background: var(--tag-bg); }
 .ver-note { display: flex; align-items: center; gap: 6px; padding-bottom: 10px; font-size: 13px; color: var(--muted); }
 .ver-bar + #sim-ov .ov3 { margin-top: 0; border-top: 0; }
 .ver-bar { justify-content: flex-start; column-gap: 28px; }
@@ -506,6 +509,9 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .ds-matrix > .rh { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; font-size: 13px; background: var(--surface); }
 .ds-matrix > .rh small { font-size: 12px; color: var(--muted); }
 .ds-matrix > .dark { background: var(--ink-strong); }
+.ds-matrix .ver-tabs { flex-wrap: wrap; gap: 4px 12px; }
+.ds-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px 12px; padding: 16px; border: 1px solid var(--divider); background: var(--surface-hover); }
+.ds-cards .ds-cap { margin-bottom: 6px; font-size: 12px; color: var(--muted); }
 .ds-matrix > .na { font-size: 12px; color: var(--disabled-text); }
 .ds-two { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; }
 .ds-spec { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -919,6 +925,9 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
           '<button type="button" class="x" data-act="remove" data-cat="' + c.id + '" data-id="' + id + '" aria-label="Remove ' + esc(l) + '">' + ICON.x + '</button></span>';
       });
       h += '</div>';
+    } else {
+      // Empty slot where excluded chips go, so the grey suggestions are never read as values.
+      h += '<div class="selected"><span class="sel-empty">Nothing excluded</span></div>';
     }
     return h + '</div>';
   }
@@ -2459,7 +2468,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   }
   function card(state) {
     var on = state === 'selected' || state === 'conflict';
-    return '<div class="c-card' + (on ? ' on' : '') + (state === 'hover' ? ' is-hover' : '') + (state === 'focus' ? ' is-focus' : '') + '" style="width: 100%; max-width: 260px">' +
+    return '<div class="c-card' + (on ? ' on' : '') + (state === 'hover' ? ' is-hover' : '') + (state === 'focus' ? ' is-focus' : '') + '" style="width: 100%">' +
       '<input type="checkbox" class="c-check" tabindex="-1"' + (on ? ' checked' : '') + ' aria-label="Select">' +
       '<span class="c-body"><span class="c-name">HOLT – MSCI Europe Proxy</span><span class="c-meta">Equity · Europe · HOLT</span>' +
       '<span class="c-desc">Quantitative proxy tracking the MSCI Europe index.</span>' +
@@ -2580,15 +2589,16 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         ['Use a placeholder as the only label.', 'Show read-only values in fields.'])));
 
     add('Components', 'c-chip', 'Chip', section('c-chip', 'Components', 'Chip',
-      'Excluded values (red tint, remove ×) and one-click suggestions (grey, +). Grey always means “suggested, not chosen”.', '2 variants',
+      'Excluded values (red tint, remove ×) and one-click suggestions (grey, +). Grey always means “suggested, not chosen”. An empty, dashed slot holds the place of excluded chips.', '3 variants',
       '<h3 class="ds-h3">Variants &amp; states</h3>' + matrix(['Default', 'Hover', 'Focus'], [
         ['Excluded', 'Chosen exclusion', [chipEx(), chipEx('is-hover'), chipEx('is-focus')]],
         ['Suggestion', 'Click to exclude', [chipSg(), chipSg('is-hover'), chipSg('is-focus')]],
-        ['More', 'Overflow', [btn('linkbtn', '+4 more'), btn('linkbtn', '+4 more', { state: 'is-hover' }), btn('linkbtn', '+4 more', { state: 'is-focus' })]]
+        ['More', 'Overflow', [btn('linkbtn', '+4 more'), btn('linkbtn', '+4 more', { state: 'is-hover' }), btn('linkbtn', '+4 more', { state: 'is-focus' })]],
+        ['Empty slot', 'Nothing excluded yet', ['<span class="sel-empty">Nothing excluded</span>', null, null]]
       ]) + specsAndUsage([
         ['Height', '28px', null], ['Excluded fill / border', '1px border', '--ex-bg'], ['', '', '--ex-bd'], ['Excluded remove', '22×22 target, 10px ×, hover var(--ex-hover)', null],
-        ['Suggestion fill / border', 'hover var(--chip-hover)', '--sg-bg'], ['', '', '--sg-bd'], ['Padding', 'excluded 0 3 0 10 · suggestion 0 10 0 8', null], ['Gap', '8px between chips', null], ['Label', 'Body 14', '--text']],
-        ['Put excluded chips on their own row under the field.', 'Show at most 4 suggestions, then “+N more”.'],
+        ['Suggestion fill / border', 'hover var(--chip-hover)', '--sg-bg'], ['', '', '--sg-bd'], ['Padding', 'excluded 0 3 0 10 · suggestion 0 10 0 8', null], ['Gap', '8px between chips', null], ['Label', 'Body 14', '--text'], ['Empty slot', '28px, 1px dashed, 13px text', '--panel-border']],
+        ['Put excluded chips on their own row under the field.', 'Keep that row when it is empty: show the “Nothing excluded” slot.', 'Show at most 4 suggestions, then “+N more”.'],
         ['Show chosen items as grey chips.', 'Mix suggestions and exclusions on one wrapping line.'])));
 
     add('Components', 'c-tag', 'Tag & status', section('c-tag', 'Components', 'Tag & status',
@@ -2620,7 +2630,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         ['Box chosen items in bordered pills inside a side column.', 'Underline row names on hover — the fill is the affordance.'])));
 
     add('Components', 'c-tabs', 'Tabs', section('c-tabs', 'Components', 'Tabs',
-      'Header links switch applications, step tabs switch screens, sub-tabs switch content within a screen.', '3 variants',
+      'Header links switch applications, step tabs switch screens, sub-tabs switch content within a screen.', '4 variants',
       '<h3 class="ds-h3">Variants &amp; states</h3>' + matrix(['Default', 'Hover', 'Current', 'Disabled'], [
         ['Header link', 'Application', [headerLink(), headerLink('hover'), headerLink('current'), null]],
         ['Step tab', 'Screen', [mainTab(), mainTab('hover'), mainTab('current'), mainTab('disabled')]],
@@ -2628,7 +2638,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
         ['Version switch', 'Current / New in Simulation', [versionTabs(), versionTabs('hover'), versionTabs('current'), null]]
       ]) + specsAndUsage([
         ['Label', 'Body 14 · header 15', '--text'], ['Current underline', '2px', '--accent'], ['Hover underline', '2px', '--button-border'], ['Disabled', 'var(--disabled-text), “Not available yet” tooltip', null],
-        ['Sub-tab label', 'muted until current', '--muted'], ['Version switch', 'full-width bar under the title; 16px labels, 3px underline; New shows a change-count badge; Current shows a read-only note on the right', '--accent'], ['Count', 'Label 13, 6px gap', '--muted'], ['Spacing', '32px between tabs · 28px sub-tabs', null]],
+        ['Sub-tab label', 'muted until current', '--muted'], ['Version switch', 'full-width bar under the title; 16px labels, 3px underline; New shows a change-count badge; the Compact / Full view link sits right after the tabs; Current shows a read-only note on the right', '--accent'], ['Count', 'Label 13, 6px gap', '--muted'], ['Spacing', '32px between tabs · 28px sub-tabs', null]],
         ['Grey out tabs that are not built yet.'], ['Use the accent underline for anything but the current item.'])));
 
     add('Components', 'c-controls', 'Selection controls', section('c-controls', 'Components', 'Selection controls',
@@ -2654,9 +2664,9 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 
     add('Components', 'c-card', 'Card', section('c-card', 'Components', 'Card',
       'Catalogue items. The whole card is one checkbox — like the benchmark radio rows — so there is no separate Add button. Selected cards keep a white fill and gain the accent border.', 'Multi-select',
-      '<h3 class="ds-h3">States</h3>' + matrix(['Default', 'Hover', 'Focus', 'Selected', 'With conflict'], [
-        ['Building block', '', [card(), card('hover'), card('focus'), card('selected'), card('conflict')]]
-      ], '120px') + specsAndUsage([
+      '<h3 class="ds-h3">States</h3><div class="ds-cards">' + [['Default', card()], ['Hover', card('hover')], ['Focus', card('focus')], ['Selected', card('selected')], ['With conflict', card('conflict')]].map(function (s) {
+        return '<div><div class="ds-cap">' + s[0] + '</div>' + s[1] + '</div>';
+      }).join('') + '</div>' + specsAndUsage([
         ['Padding', '14px 16px', null], ['Checkbox', '16px, accent-colour, aligned with the name, 10px gap', '--accent'], ['Border', '1px → selected: accent', '--panel-border'],
         ['Hover', 'whole card', '--surface-hover'], ['Focus', '2px ring around the card (keyboard only)', '--focus'], ['Name', 'Body strong 14 / 600', '--text'], ['Meta', 'Label 13', '--muted'],
         ['Description', '13px, full text', '--ink-soft'], ['Grid', 'auto-fill, min 250px, 12px gap', null]],
