@@ -156,7 +156,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .opt.on { background: var(--ex-row); }
 .opt strong { font-weight: 600; }
 .opt input, .check input { width: 14px; height: 14px; margin: 0; accent-color: var(--accent); }
-.sub { color: var(--icon-subtle); margin-left: 8px; }
+.opt .sub { color: var(--icon-subtle); margin-left: 8px; }
 .dd-foot { display: flex; justify-content: flex-end; padding: 4px 6px; border-top: 1px solid var(--hover-fill); }
 .empty { padding: 8px 10px; color: var(--muted); }
 
@@ -286,6 +286,8 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .basket .x { color: var(--icon-subtle); }
 .basket .x:hover { background: var(--hover-fill); color: var(--text); }
 .b-empty { font-size: 13px; color: var(--icon-subtle); }
+/* Lines up with the item names (12px tick + 10px gap). */
+.b-more { margin-left: 18px; }
 .b-add { position: relative; display: flex; gap: 8px; }
 .b-add .search { flex: 1; padding-right: 8px; }
 .b-add .select { flex: 0 0 96px; }
@@ -361,7 +363,15 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 .al { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 420px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); margin-top: 16px; }
 .al-list { display: flex; flex-direction: column; min-height: 0; }
 .al-head { display: flex; justify-content: space-between; padding: 0 20px 8px 0; font-size: 13px; color: var(--muted); }
-.al-items { flex: 1 1 auto; min-height: 0; overflow-y: auto; border-top: 1px solid var(--divider); }
+/* No scrollbar here: it would sit between the selected row and its details panel and break the join.
+   Soft shadows at the edges show there is more to scroll (toggled by syncFades). */
+.al-items { flex: 1 1 auto; min-height: 0; overflow-y: auto; border-top: 1px solid var(--divider); scrollbar-width: none; }
+.al-items::-webkit-scrollbar { display: none; }
+.al-items::before, .al-items::after { content: ""; position: sticky; z-index: 2; display: block; height: 16px; pointer-events: none; opacity: 0; transition: opacity 0.15s; }
+/* Small triangle at the right edge, where a scrollbar would be, points the way to more rows (muted ink). */
+.al-items::before { top: 0; margin-bottom: -16px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 6L5 0l5 6z' fill='%235A5D5C'/%3E%3C/svg%3E") calc(100% - 5px) 3px / 10px 6px no-repeat, linear-gradient(rgba(28, 28, 28, 0.16), rgba(28, 28, 28, 0)); }
+.al-items::after { bottom: 0; margin-top: -16px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235A5D5C'/%3E%3C/svg%3E") calc(100% - 5px) calc(100% - 3px) / 10px 6px no-repeat, linear-gradient(rgba(28, 28, 28, 0), rgba(28, 28, 28, 0.16)); }
+.al-items.fade-top::before, .al-items.fade-bottom::after { opacity: 1; }
 .al-item { display: flex; flex-direction: column; gap: 8px; padding: 10px 20px 12px 12px; border-bottom: 1px solid var(--divider); background: #FFFFFF; }
 .al-item:hover { background: var(--surface-hover); }
 .al-item.on, .al-item.on:hover { background: var(--surface-sunken); }
@@ -1261,6 +1271,20 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       desc: 'Proxy for global emerging markets using only ADR-listed securities.' },
     { id: 'usgr', kind: 'bb', name: 'LUX EQ – USA Growth USD', area: 'Equity', region: 'USA', provider: 'LUX Funds', geo: ['na'],
       desc: 'US large-cap growth equity fund denominated in USD.' },
+    { id: 'ch-eq', kind: 'bb', name: 'LUX KEY – Swiss Equity Quality', area: 'Equity', region: 'Switzerland', provider: 'LUX Funds', geo: ['ch'],
+      desc: 'Swiss large- and mid-cap companies with strong balance sheets and stable earnings.' },
+    { id: 'jp-eq', kind: 'bb', name: 'HOLT – MSCI Japan Proxy', area: 'Equity', region: 'Japan', provider: 'HOLT', geo: ['jp'],
+      desc: 'Quantitative proxy tracking the MSCI Japan index using HOLT valuation metrics.' },
+    { id: 'apac-eq', kind: 'bb', name: 'HOLT – Asia Pacific ex Japan Proxy', area: 'Equity', region: 'APAC', provider: 'HOLT', geo: ['apac'],
+      desc: 'Quantitative proxy for developed and emerging Asia Pacific, excluding Japan.' },
+    { id: 'health', kind: 'bb', name: 'LUX EQ – Global Health Care', area: 'Equity', region: 'Global', provider: 'LUX Funds', sector: ['health'],
+      desc: 'Global pharmaceutical, biotech and medical technology companies.' },
+    { id: 'hybond', kind: 'bb', name: 'LUX IM – Global High Yield', area: 'Fixed income', region: 'Global', provider: 'LUX IM',
+      desc: 'Sub-investment-grade corporate bonds with active credit selection.' },
+    { id: 'eubond', kind: 'bb', name: 'LUX IM – EUR Corporate Bond', area: 'Fixed income', region: 'Europe', provider: 'LUX IM', geo: ['ez'],
+      desc: 'Investment-grade corporate bonds denominated in euro.' },
+    { id: 'gold', kind: 'bb', name: 'LUX FS – Physical Gold', area: 'Commodities', region: 'Global', provider: 'LUX Funds',
+      desc: 'Physically backed gold exposure held in Swiss vaults.' },
     { id: 'mp-growth', kind: 'mp', name: 'Growth Focus Portfolio', area: 'Equity', region: 'Global', provider: 'In-house',
       desc: 'Diversified portfolio with a primary focus on capital growth through equities.' },
     { id: 'mp-balanced', kind: 'mp', name: 'Balanced Allocation Portfolio', area: 'Multi-asset', region: 'Global', provider: 'In-house',
@@ -1272,7 +1296,15 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     { id: 'mp-sustain', kind: 'mp', name: 'Sustainable Future Portfolio', area: 'Multi-asset', region: 'Global', provider: 'In-house',
       desc: 'Multi-asset portfolio investing in companies with strong sustainability profiles.' },
     { id: 'mp-dynamic', kind: 'mp', name: 'Dynamic Opportunities Portfolio', area: 'Flexible', region: 'Global', provider: 'In-house',
-      desc: 'Flexible allocation that adapts to changing market opportunities.' }
+      desc: 'Flexible allocation that adapts to changing market opportunities.' },
+    { id: 'mp-yield', kind: 'mp', name: 'Global Yield Portfolio', area: 'Fixed income', region: 'Global', provider: 'In-house',
+      desc: 'Income-oriented mix of government, corporate and high-yield bonds.' },
+    { id: 'mp-esg', kind: 'mp', name: 'ESG Leaders Equity Portfolio', area: 'Equity', region: 'Developed markets', provider: 'In-house',
+      desc: 'Developed-market equities with the best ESG scores in each sector.' },
+    { id: 'mp-cap', kind: 'mp', name: 'Capital Preservation Portfolio', area: 'Fixed income', region: 'Global', provider: 'In-house',
+      desc: 'Short-duration, high-quality bonds for investors who put stability first.' },
+    { id: 'mp-real', kind: 'mp', name: 'Real Assets Portfolio', area: 'Multi-asset', region: 'Global', provider: 'In-house',
+      desc: 'Infrastructure, real estate and commodities to protect against inflation.' }
   ];
   var INSTR = [
     { isin: 'US02079K1079', name: 'Alphabet Inc. Class C' },
@@ -1283,12 +1315,13 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     { isin: 'NL0010273215', name: 'ASML Holding NV' }
   ];
   var CCYS = ['EUR', 'USD', 'CHF', 'GBP', 'JPY'];
-  var AREAS = ['Equity', 'Fixed income', 'Multi-asset', 'Flexible'];
+  var AREAS = ['Equity', 'Fixed income', 'Multi-asset', 'Flexible', 'Commodities'];
   var PROVIDERS = ['HOLT', 'LUX IM', 'LUX Funds', 'In-house'];
 
   var C = {
+    more: {},
     kind: 'bb', q: '', area: '', provider: '',
-    added: ['keyeq', 'gem', 'gbond', 'defender'],
+    added: ['keyeq', 'gem', 'gbond', 'defender', 'holt-world', 'holt-spx', 'ch-eq', 'jp-eq', 'hybond', 'gold', 'mp-balanced', 'mp-income'],
     inst: ['US02079K1079'], instQ: '',
     cash: [{ ccy: 'EUR', w: 2 }], cashCcy: 'USD', cashW: ''
   };
@@ -1356,11 +1389,18 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       '<button type="button" class="x" data-cact="' + act + '" data-id="' + esc(id) + '" aria-label="Remove ' + esc(label) + '">' + ICON.x + '</button></div>';
   }
   // Label + count, then the add field (if any), then the list — same order as Preferences.
+  // Long lists show the first 5 items, then “+N more” (like the suggestion chips); never “+1 more”, which takes the same space as the item.
+  var B_SHOW = 5;
   function group(title, items, emptyText, extra) {
+    var cap = items.length > B_SHOW + 1;
+    var open = !!C.more[title];
+    var shown = open || !cap ? items : items.slice(0, B_SHOW);
+    var more = cap ? '<button type="button" class="linkbtn b-more" data-cact="more" data-id="' + esc(title) + '" aria-expanded="' + open + '">' +
+      (open ? 'Show less' : '+' + (items.length - B_SHOW) + ' more') + '</button>' : '';
     return '<div class="b-group"><div class="row-label"><span>' + title + '</span>' +
       '<span class="count">' + (items.length ? items.length + ' added' : '') + '</span></div>' +
       (extra || '') +
-      (items.length ? '<div class="b-list">' + items.join('') + '</div>' : '<div class="b-empty">' + emptyText + '</div>') +
+      (items.length ? '<div class="b-list">' + shown.join('') + '</div>' + more : '<div class="b-empty">' + emptyText + '</div>') +
       '</div>';
   }
 
@@ -1462,6 +1502,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       C.added = C.added.indexOf(id) > -1 ? C.added.filter(function (x) { return x !== id; }) : C.added.concat([id]);
     }
     else if (act === 'kind') C.kind = id;
+    else if (act === 'more') C.more[id] = !C.more[id];
     else if (act === 'inst-add') { if (C.inst.indexOf(id) === -1) C.inst.push(id); C.instQ = ''; }
     else if (act === 'inst-remove') C.inst = C.inst.filter(function (x) { return x !== id; });
     else if (act === 'cash-add') {
@@ -1504,7 +1545,7 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
   var CLASSES = ['Equity', 'Bonds', 'Alternatives', 'Liquidity'];
   // Categorical slots 1–4 of the validated reference palette; the legend always prints values.
   var COLORS = { Equity: 'var(--chart-1)', Bonds: 'var(--chart-2)', Alternatives: 'var(--chart-3)', Liquidity: 'var(--chart-4)' };
-  var AREA_CLASS = { 'Equity': 'Equity', 'Fixed income': 'Bonds', 'Multi-asset': 'Alternatives', 'Flexible': 'Alternatives' };
+  var AREA_CLASS = { 'Equity': 'Equity', 'Fixed income': 'Bonds', 'Multi-asset': 'Alternatives', 'Flexible': 'Alternatives', 'Commodities': 'Alternatives' };
   var CHECKS = [['Asset allocation', 5], ['Portfolio risk', 5], ['Bulk risk', 5], ['Issuer risk', 5], ['Bond rating', 5], ['Maturity date', 5], ['ESG overall', 5]];
   var ICON = {
     check: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>',
@@ -1687,7 +1728,8 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
 
   // ---- Component allocation --------------------------------------------------
   // Weights for components picked on Component selection; cash weights live on the cash entries themselves.
-  var A = { sel: null, w: { 'c:keyeq': 40, 'c:gem': 10, 'c:gbond': 30, 'c:defender': 15, 'i:US02079K1079': 3 }, raw: {} };
+  var A = { sel: null, w: { 'c:keyeq': 18, 'c:gem': 6, 'c:gbond': 16, 'c:defender': 8, 'c:holt-world': 10, 'c:holt-spx': 9, 'c:ch-eq': 6, 'c:jp-eq': 4,
+    'c:hybond': 7, 'c:gold': 3, 'c:mp-balanced': 6, 'c:mp-income': 2, 'i:US02079K1079': 3 }, raw: {} };
 
   function items() {
     var M = window.COMP;
@@ -1746,6 +1788,10 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     if (c.region === 'Europe') return [['MSCI Europe', 100]];
     if (c.region === 'USA') return [['S&P 500', 100]];
     if (c.region === 'Emerging markets') return [['MSCI Emerging Markets', 100]];
+    if (c.area === 'Commodities') return [['LBMA Gold Price', 100]];
+    if (c.region === 'Switzerland') return [['Swiss Performance Index', 100]];
+    if (c.region === 'Japan') return [['MSCI Japan', 100]];
+    if (c.region === 'APAC') return [['MSCI AC Asia Pacific ex Japan', 100]];
     return [['MSCI World', 100]];
   }
   var POOLS = {
@@ -1843,6 +1889,13 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
     var el = document.getElementById('alloc-ov');
     if (el) el.innerHTML = overview('alloc', allocRows());
   }
+  // Edge shadows on the weight list: shown only in a direction that can still scroll.
+  function syncFades() {
+    var el = document.getElementById('al-items');
+    if (!el) return;
+    el.classList.toggle('fade-top', el.scrollTop > 1);
+    el.classList.toggle('fade-bottom', el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+  }
   function renderAlloc() {
     var list = items();
     if (!list.some(function (it) { return it.key === A.sel; })) A.sel = list.length ? list[0].key : null;
@@ -1873,7 +1926,10 @@ h2 { margin: 0 0 4px; font-size: 20px; font-weight: 400; }
       '<div class="al-detail" aria-live="polite">' + detail(sel) + '</div></div>';
     keepFocus(allocRoot, function () { allocRoot.innerHTML = h; });
     syncAlloc();
+    syncFades();
   }
+  allocRoot.addEventListener('scroll', function (e) { if (e.target.id === 'al-items') syncFades(); }, true);
+  window.addEventListener('resize', syncFades);
 
   function round2(n) { return Math.round(n * 100) / 100; }
   allocRoot.addEventListener('click', function (e) {
