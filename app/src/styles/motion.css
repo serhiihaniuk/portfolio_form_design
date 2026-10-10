@@ -1,0 +1,79 @@
+/*
+ * Motion — View Transitions (browser API) driven by React's <ViewTransition>.
+ *
+ * How it works:
+ *   1. A state update runs inside startTransition().
+ *   2. React asks the browser for document.startViewTransition(): the browser takes a picture of every
+ *      <ViewTransition> boundary that changes, applies the update, takes a second picture, and animates
+ *      between them with pseudo-elements: ::view-transition-old(x) (the leaving picture) and
+ *      ::view-transition-new(x) (the arriving picture).
+ *   3. The class names below are the ones passed to <ViewTransition enter / exit / update / default>.
+ *      addTransitionType('forward' | 'back') lets one boundary pick a different class per direction.
+ */
+
+/* The page itself never animates; only the boundaries we mark do. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* ---- Step change: the screen slides in the direction of travel ---- */
+::view-transition-old(.step-forward) { animation: 140ms ease-in both vt-out-left; }
+::view-transition-new(.step-forward) { animation: 220ms ease-out 40ms both vt-in-right; }
+::view-transition-old(.step-back) { animation: 140ms ease-in both vt-out-right; }
+::view-transition-new(.step-back) { animation: 220ms ease-out 40ms both vt-in-left; }
+/* The frame around the screen doesn't stretch between the two sizes; the pictures just swap. */
+::view-transition-group(.step-forward),
+::view-transition-group(.step-back) { animation-duration: 0s; }
+
+@keyframes vt-out-left { to { opacity: 0; transform: translateX(-24px); } }
+@keyframes vt-out-right { to { opacity: 0; transform: translateX(24px); } }
+@keyframes vt-in-right { from { opacity: 0; transform: translateX(24px); } }
+@keyframes vt-in-left { from { opacity: 0; transform: translateX(-24px); } }
+
+/* ---- Shared element across steps (overview strip on Allocation and Simulation) ---- */
+/* Stays in place while the screen around it slides; glides to its new spot, contents cross-fade. */
+::view-transition-group(.morph) { animation-duration: 260ms; animation-timing-function: ease-in-out; }
+::view-transition-old(.morph),
+::view-transition-new(.morph) { animation-duration: 260ms; height: 100%; object-fit: none; object-position: top left; }
+
+/* ---- Items appearing in / leaving a list (basket rows, exclusion chips, instrument rows) ---- */
+::view-transition-new(.item-in):only-child { animation: 220ms ease-out both vt-item-in; }
+::view-transition-old(.item-out):only-child { animation: 150ms ease-in both vt-item-out; }
+/* Items that only move (because one above was added or removed) glide to their new place. */
+::view-transition-group(.item-move) { animation-duration: 220ms; animation-timing-function: ease-out; }
+
+/* A whole group (heading + field + list) that moves because something above it changed:
+   its picture glides to the new place without stretching or cross-fading. */
+::view-transition-group(.group-move) { animation-duration: 220ms; animation-timing-function: ease-out; }
+::view-transition-old(.group-move) { display: none; }
+::view-transition-new(.group-move) { animation: none; height: 100%; object-fit: none; object-position: top left; }
+
+@keyframes vt-item-in { from { opacity: 0; transform: translateX(-12px); } }
+@keyframes vt-item-out { to { opacity: 0; transform: scale(0.96); } }
+
+/* ---- Content swap in place (benchmark details): a quick cross-fade ---- */
+::view-transition-old(.swap),
+::view-transition-new(.swap) { animation-duration: 180ms; }
+
+/* "Reduce motion" checkbox in the header (on by default): no view transitions, no CSS transitions or animations. */
+html[data-reduce-motion]::view-transition-group(*),
+html[data-reduce-motion]::view-transition-old(*),
+html[data-reduce-motion]::view-transition-new(*) {
+  animation: none !important;
+}
+html[data-reduce-motion] *,
+html[data-reduce-motion] *::before,
+html[data-reduce-motion] *::after {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+}
+
+/* Respect the system setting: no movement at all. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

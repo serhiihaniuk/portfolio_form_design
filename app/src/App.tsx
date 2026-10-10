@@ -1,0 +1,174 @@
+import { Tooltip } from '@base-ui/react/tooltip'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { addTransitionType, startTransition, useEffect, useRef, useState, ViewTransition } from 'react'
+import { Button } from './components/ui/button'
+import { Checkbox } from './components/ui/selection'
+import { Tab, Tabs, TabsList } from './components/ui/tabs'
+import { cn } from './lib/cn'
+import { PortfolioProvider } from './state/portfolio'
+import { DataView } from './views/DataView'
+import { DesignSystemPage } from './design-system/DesignSystemPage'
+import { PreferencesView } from './views/PreferencesView'
+import { ComponentsView } from './views/ComponentsView'
+import { AllocationView } from './views/AllocationView'
+import { SimulationView } from './views/SimulationView'
+
+const STEPS = [
+  { id: 'data', label: 'Model portfolio data' },
+  { id: 'preferences', label: 'Preferences' },
+  { id: 'components', label: 'Component selection' },
+  { id: 'allocation', label: 'Component allocation' },
+  { id: 'simulation', label: 'Simulation' },
+] as const
+type StepId = (typeof STEPS)[number]['id']
+type Route = StepId | 'design'
+
+function readHash(): Route {
+  const h = location.hash.slice(1)
+  return h === 'design' || STEPS.some((s) => s.id === h) ? (h as Route) : 'data'
+}
+
+export default function App() {
+  const [route, setRoute] = useState<Route>(readHash)
+  const current = useRef(route)
+  // Route changes run in a transition tagged with the direction, so the step view slides forward or back.
+  const show = (r: Route) => {
+    const from = STEPS.findIndex((s) => s.id === current.current)
+    const to = STEPS.findIndex((s) => s.id === r)
+    current.current = r
+    startTransition(() => {
+      if (from > -1 && to > -1 && from !== to) addTransitionType(to > from ? 'forward' : 'back')
+      setRoute(r)
+    })
+  }
+  useEffect(() => {
+    const on = () => show(readHash())
+    window.addEventListener('hashchange', on)
+    return () => window.removeEventListener('hashchange', on)
+  }, [])
+  const go = (r: Route) => { history.replaceState(null, '', '#' + r); show(r) }
+
+  return (
+    <PortfolioProvider>
+      <Tooltip.Provider delay={300}>
+        <div className="flex h-dvh flex-col overflow-hidden">
+          <AppHeader route={route} onNavigate={go} />
+          {route === 'design' ? <DesignSystemPage /> : <Flow step={route} onStep={go} />}
+        </div>
+      </Tooltip.Provider>
+    </PortfolioProvider>
+  )
+}
+
+function AppHeader({ route, onNavigate }: { route: Route; onNavigate: (r: Route) => void }) {
+  const links = [
+    { id: 'book', label: 'Model portfolio book', active: route !== 'design', to: 'data' as Route },
+    { id: 'design', label: 'Design system', active: route === 'design', to: 'design' as Route },
+  ]
+  return (
+    <header className="shrink-0 border-b border-line-strong bg-surface">
+      <div className="mx-auto flex min-h-14 max-w-340 items-stretch gap-12 px-6">
+        <div className="flex h-6.5 w-22 items-center justify-center self-center border border-dashed border-line-strong text-xs tracking-widest text-fg-muted">[LOGO]</div>
+        <nav className="flex gap-8" aria-label="Applications">
+          {links.map((l) => (
+            <a
+              key={l.id}
+              href={'#' + l.to}
+              onClick={(e) => { e.preventDefault(); onNavigate(l.to) }}
+              aria-current={l.active ? 'page' : undefined}
+              className="flex items-center border-b-3 border-transparent text-base text-fg hover:border-line-strong aria-[current=page]:border-accent"
+            >
+              {l.label}
+            </a>
+          ))}
+        </nav>
+        <ReduceMotion />
+      </div>
+    </header>
+  )
+}
+
+function Flow({ step, onStep }: { step: StepId; onStep: (r: StepId) => void }) {
+  const i = STEPS.findIndex((s) => s.id === step)
+  const prev = STEPS[i - 1]
+  const next = STEPS[i + 1]
+  return (
+    <main className="mx-auto flex min-h-0 w-full max-w-340 flex-1 flex-col px-6">
+      <nav aria-label="Breadcrumb" className="my-3.5 flex items-center gap-1.5 text-xs">
+        <a href="#data" className="text-link hover:text-link-hover">Model portfolio book</a>
+        <span aria-hidden className="text-fg-subtle">›</span>
+        <span>NEW Model portfolio</span>
+      </nav>
+
+      {/* Panel: tabs and action bar stay put; only the view scrolls (or its inner lists). */}
+      <div className="mb-4 flex min-h-0 flex-1 flex-col border border-line-strong bg-surface">
+        <Tabs value={step} onValueChange={(v) => onStep(v as StepId)}>
+          <TabsList variant="step" className="border-b border-line px-5">
+            {STEPS.map((s) => <Tab key={s.id} value={s.id}>{s.label}</Tab>)}
+            <Tab value="reporting" disabled title="Not available yet">Reporting</Tab>
+          </TabsList>
+        </Tabs>
+
+        <div className={cn('flex min-h-0 flex-1 flex-col overflow-y-auto')}>
+          {/* Animates only when a step change tags the transition 'forward' / 'back'; other updates inside stay instant. */}
+          <ViewTransition update={{ forward: 'step-forward', back: 'step-back', default: 'none' }} default="none">
+            <div className="flex min-h-0 flex-1 flex-col">
+              {step === 'data' ? <DataView /> : step === 'preferences' ? <PreferencesView /> : step === 'components' ? <ComponentsView /> : step === 'allocation' ? <AllocationView /> : <SimulationView />}
+            </div>
+          </ViewTransition>
+        </div>
+
+        <ActionBar
+          back={prev && { label: prev.label, onClick: () => onStep(prev.id) }}
+          next={next ? { label: next.label, onClick: () => onStep(next.id) } : { label: 'Publish', onClick: () => {} }}
+        />
+      </div>
+    </main>
+  )
+}
+
+/** Dark action bar: Back + Cancel on the left, Save as draft + the forward step (the one primary) on the right. */
+function ActionBar({ back, next }: { back?: { label: string; onClick: () => void }; next: { label: string; onClick: () => void } }) {
+  return (
+    <div className="flex shrink-0 flex-wrap items-center justify-between gap-2.5 bg-surface-inverse px-6 py-3">
+      <div className="flex items-center gap-2.5">
+        {back && (
+          <Button variant="secondary" tone="onDark" size="lg" onClick={back.onClick}>
+            <ChevronLeft className="size-3.5" strokeWidth={2} />
+            {back.label}
+          </Button>
+        )}
+        <Button variant="link" tone="onDark" className="h-9 px-2">Cancel</Button>
+      </div>
+      <div className="flex items-center gap-2.5">
+        <Button variant="secondary" tone="onDark" size="lg">Save as draft</Button>
+        <Button variant="primary" tone="onDark" size="lg" onClick={next.onClick}>
+          {next.label}
+          <ChevronRight className="size-3.5" strokeWidth={2} />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+const MOTION_KEY = 'reduce-motion'
+function readReduceMotion() {
+  try { return localStorage.getItem(MOTION_KEY) !== 'off' } catch { return true }
+}
+/**
+ * Reduce motion (on by default): sets data-reduce-motion on <html>, which motion.css uses to switch off
+ * view transitions and every CSS transition / animation. Remembered in this browser.
+ */
+function ReduceMotion() {
+  const [on, setOn] = useState(readReduceMotion)
+  useEffect(() => {
+    document.documentElement.toggleAttribute('data-reduce-motion', on)
+    try { localStorage.setItem(MOTION_KEY, on ? 'on' : 'off') } catch { /* storage unavailable */ }
+  }, [on])
+  return (
+    <label className="flex cursor-pointer items-center gap-2 self-center text-xs text-fg-muted">
+      <Checkbox checked={on} onCheckedChange={setOn} />
+      Reduce motion
+    </label>
+  )
+}

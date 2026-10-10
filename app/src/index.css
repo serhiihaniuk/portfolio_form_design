@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "./styles/theme.css";
+@import "./styles/motion.css";
+
+/* Page defaults. Components style themselves with utilities; only true globals live here. */
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-page font-sans text-sm text-fg antialiased;
+  }
+  /* Base UI renders popups in a portal; isolating the app root keeps them above everything. */
+  #root {
+    isolation: isolate;
+  }
+  /* Quiet scrollbars: thin, light grey, no track; darker while hovering the scroll area. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  *:hover {
+    scrollbar-color: var(--color-fg-subtle) transparent;
+  }
+  /* One keyboard focus style for everything that does not define its own. */
+  :focus-visible {
+    @apply outline-2 outline-offset-1 outline-focus;
+  }
+}
