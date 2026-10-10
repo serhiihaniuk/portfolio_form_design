@@ -2,6 +2,16 @@
 @import "./styles/theme.css";
 @import "./styles/motion.css";
 
+/* Source Sans 3 (open fallback for Frutiger): only the Latin subset, so the single-file build stays small.
+   Characters outside it (e.g. →) fall back to the next font in --font-sans. */
+@font-face {
+  font-family: "Source Sans 3 Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url("@fontsource-variable/source-sans-3/files/source-sans-3-latin-wght-normal.woff2") format("woff2-variations");
+}
+
 /* Page defaults. Components style themselves with utilities; only true globals live here. */
 @layer base {
   html,

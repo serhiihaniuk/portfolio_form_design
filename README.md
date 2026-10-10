@@ -10,7 +10,7 @@ A React app built on a Tailwind CSS 4 design system with [Base UI](https://base-
 |---|---|
 | App source | [`app/`](app) — see [app/README.md](app/README.md) |
 | How the design system works | [app/DESIGN_SYSTEM.md](app/DESIGN_SYSTEM.md) |
-| Built app served by GitHub Pages | `index.html` + `assets/` (generated — don't edit) |
+| Built app served by GitHub Pages | `index.html` — one minified, self-contained file (generated — don't edit) |
 | Earlier single-file HTML prototype | [`prototype.html`](https://serhiihaniuk.github.io/portfolio_form_design/prototype.html) |
 
 ## Screens
@@ -29,7 +29,7 @@ A React app built on a Tailwind CSS 4 design system with [Base UI](https://base-
 ```bash
 cd app
 npm install
-npm run publish:pages   # builds, then copies app/dist to the repo root (index.html + assets/)
+npm run publish:pages   # builds one self-contained index.html and copies it to the repo root
 ```
 
 Then commit and push; GitHub Pages serves the repo root.
