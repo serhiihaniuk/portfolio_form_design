@@ -151,7 +151,10 @@ Animations between two states of the page are done by the browser's **View Trans
 Used here for:
 - changing step (slides by direction);
 - rows and chips appearing and disappearing;
-- the benchmark details cross-fade.
+- the benchmark details cross-fade;
+- a catalogue card expanding into its Learn more panel and back (a shared element).
+  - The card and the expanded card ([`src/components/ui/expanded-card.tsx`](src/components/ui/expanded-card.tsx)) use the same view-transition `name`, and only one of them is rendered at a time.
+  - The expanded card uses React's `createPortal`, which mounts in the same update. A dialog library's portal that mounts a pass later would miss the transition's "after" picture.
 
 Rules:
 - Only animate structure changes, never typing or dragging.

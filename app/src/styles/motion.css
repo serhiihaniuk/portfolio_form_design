@@ -44,6 +44,43 @@
 @keyframes vt-fade-out { to { opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
 
+/* ---- Learn more: the catalogue card expands into a large card and back (<ViewTransition share>) ----
+   The box grows from the card's own rectangle to the expanded card's (and back). Both pictures keep their real
+   size, anchored top-left and clipped to the growing box, so the content is revealed, not stretched.
+   Name and meta line (their own shared names) fly to their new places; the backdrop fades. */
+::view-transition-group(.card-expand),
+::view-transition-group(.text-morph) {
+  animation-duration: 340ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+/* The growing box is solid white with the panel shadow, so the backdrop never shows through while the
+   card picture fades out and the expanded picture fades in (otherwise it looks dimmed, then snaps to white). */
+::view-transition-group(.card-expand) {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-pop);
+  overflow: clip; /* both pictures stay inside the growing / shrinking box */
+}
+::view-transition-old(.card-expand),
+::view-transition-new(.card-expand) {
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+  object-position: top left;
+}
+::view-transition-old(.card-expand) { animation: 160ms ease-out both vt-fade-out; }
+::view-transition-new(.card-expand) { animation: 240ms ease-in 60ms both vt-fade-in; }
+/* Text keeps its natural size (no stretching to the box); it moves and cross-fades. */
+::view-transition-old(.text-morph),
+::view-transition-new(.text-morph) { width: auto; height: auto; animation-duration: 340ms; }
+/* Stacking: the browser puts elements that are new in the "after" picture (the backdrop) above ones that already
+   existed (the card), so without this the backdrop would dim the opening card. Groups are positioned, so z-index works. */
+::view-transition-group(.fade-in),
+::view-transition-group(.fade-out) { z-index: 1; }
+::view-transition-group(.card-expand) { z-index: 2; }
+::view-transition-group(.text-morph) { z-index: 3; }
+::view-transition-new(.fade-in):only-child { animation: 240ms ease-out both vt-fade-in; }
+::view-transition-old(.fade-out):only-child { animation: 220ms ease-in both vt-fade-out; }
+
 /* ---- Items appearing in / leaving a list (basket rows, exclusion chips, instrument rows) ---- */
 ::view-transition-new(.item-in):only-child { animation: 220ms ease-out both vt-item-in; }
 ::view-transition-old(.item-out):only-child { animation: 150ms ease-in both vt-item-out; }

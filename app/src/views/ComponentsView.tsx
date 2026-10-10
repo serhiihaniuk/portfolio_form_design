@@ -1,9 +1,9 @@
 import { Check, TriangleAlert } from 'lucide-react'
-import { useState, ViewTransition, type ReactNode } from 'react'
+import { startTransition, useEffect, useRef, useState, ViewTransition, type ReactNode } from 'react'
 import { Button } from '../components/ui/button'
 import { RemoveButton } from '../components/ui/chip'
 import { MultiCombobox } from '../components/ui/combobox'
-import { Modal } from '../components/ui/dialog'
+import { ExpandedCard, Shared } from '../components/ui/expanded-card'
 import { AffixInput, SearchInput } from '../components/ui/input'
 import { GroupLabel, Section } from '../components/ui/layout'
 import { Select } from '../components/ui/select'
@@ -21,6 +21,18 @@ export function ComponentsView() {
   const [provider, setProvider] = useState('')
   const [kind, setKind] = useState<'bb' | 'mp'>('bb')
   const [learn, setLearn] = useState<string | null>(null)
+  // Learn more: the card expands into a large card and collapses back (React <ViewTransition>, shared names).
+  const lastOpen = useRef<string | null>(null)
+  const openLearn = (id: string) => { lastOpen.current = id; startTransition(() => setLearn(id)) }
+  /** then: more state changes in the same transition (e.g. add the component: its row slides into the sidebar). */
+  const closeLearn = (then?: () => void) => startTransition(() => { setLearn(null); then?.() })
+  // After closing, focus goes back to that card's Learn more (the card was re-rendered, so look it up again).
+  useEffect(() => {
+    if (learn || !lastOpen.current) return
+    document.getElementById('card-' + lastOpen.current)?.querySelector<HTMLElement>('button[aria-haspopup]')?.focus()
+    lastOpen.current = null
+  }, [learn])
+
 
   const ql = q.trim().toLowerCase()
   const filtered = COMPONENTS.filter((c) =>
@@ -47,13 +59,13 @@ export function ComponentsView() {
           </Tabs>
           {/* 4px inner padding so the card focus outline is not clipped by the scroll container. */}
           <div className="-mx-1 mt-3 -mb-1 grid min-h-0 flex-1 grid-cols-[repeat(auto-fill,minmax(15.625rem,1fr))] content-start gap-3 overflow-y-auto p-1 pr-2.5">
-            {list.map((c) => <CatalogueCard key={c.id} c={c} onLearnMore={() => setLearn(c.id)} />)}
+            {list.map((c) => <CatalogueCard key={c.id} c={c} expanded={learn === c.id} onLearnMore={() => openLearn(c.id)} />)}
             {!list.length && <div className="col-span-full px-1 py-2 text-fg-subtle">No components match these filters.</div>}
           </div>
         </div>
         <Basket />
       </div>
-      <LearnMore id={learn} onClose={() => setLearn(null)} conflicts={learn ? conflictsOf(componentById(learn), state.prefs) : []} />
+      <LearnMore id={learn} onClose={closeLearn} conflicts={learn ? conflictsOf(componentById(learn), state.prefs) : []} />
     </Section>
   )
 }
@@ -69,56 +81,65 @@ function useToggleComponent() {
  * Catalogue card = one big checkbox: the label fills the card, so a click anywhere toggles it.
  * "Learn more" sits on top of the label (not inside it), so it opens details without toggling.
  */
-function CatalogueCard({ c, onLearnMore }: { c: Component; onLearnMore: () => void }) {
+/** View-transition names a catalogue card shares with its expanded version. */
+// The description is not shared: it wraps differently in the card and the panel, so it would stretch; it fades with the box.
+const cardNames = (id: string) => ({ box: `card-${id}`, title: `card-title-${id}`, meta: `card-meta-${id}` })
+
+function CatalogueCard({ c, expanded, onLearnMore }: { c: Component; expanded: boolean; onLearnMore: () => void }) {
   const { state } = usePortfolio()
   const toggle = useToggleComponent()
   const on = state.comps.added.includes(c.id)
   const cf = conflictsOf(c, state.prefs)
-  return (
-    <div className={'relative flex min-w-0 border bg-surface hover:bg-surface-subtle has-[[role=checkbox]:focus-visible]:outline-2 has-[[role=checkbox]:focus-visible]:outline-offset-1 has-[[role=checkbox]:focus-visible]:outline-focus ' + (on ? 'border-accent' : 'border-line-strong')}>
+  // While expanded, the card's slot stays (keeps the grid still) but is empty and has no names: the expanded card holds them.
+  const n = expanded ? undefined : cardNames(c.id)
+  const card = (
+    <div id={'card-' + c.id} className={'relative flex min-w-0 border bg-surface hover:bg-surface-subtle has-[[role=checkbox]:focus-visible]:outline-2 has-[[role=checkbox]:focus-visible]:outline-offset-1 has-[[role=checkbox]:focus-visible]:outline-focus ' + (on ? 'border-accent' : 'border-line-strong')}>
       <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2.5 px-4 pt-3.5 pb-10">
         <Checkbox checked={on} onCheckedChange={(v) => toggle(c.id, v)} className="mt-0.5 focus-visible:outline-none" />
         <span className="flex min-w-0 flex-col">
-          <span className="font-semibold">{c.name}</span>
-          <span className="mt-px text-xs text-fg-muted">{c.area} · {c.region} · {c.provider}</span>
-          <span className="mt-2 text-xs text-fg-secondary">{c.desc}</span>
+          <Shared name={n?.title} className="font-semibold">{c.name}</Shared>
+          <Shared name={n?.meta} className="mt-px text-xs text-fg-muted">{c.area} · {c.region} · {c.provider}</Shared>
+          <span className="mt-2 block text-xs text-fg-secondary">{c.desc}</span>
           {cf.length > 0 && <ConflictTag className="mt-2.5">Conflicts with exclusions: {cf.join(', ')}</ConflictTag>}
         </span>
       </label>
       <Button variant="link" className="absolute bottom-2 left-9.5" onClick={onLearnMore} aria-haspopup="dialog">Learn more</Button>
     </div>
   )
+  if (expanded) return <div aria-hidden className="invisible grid">{card}</div>
+  return <ViewTransition name={n!.box} share="card-expand" default="none">{card}</ViewTransition>
 }
 
-function LearnMore({ id, onClose, conflicts }: { id: string | null; onClose: () => void; conflicts: string[] }) {
+function LearnMore({ id, onClose, conflicts }: { id: string | null; onClose: (then?: () => void) => void; conflicts: string[] }) {
   const { state } = usePortfolio()
   const toggle = useToggleComponent()
-  // Keep the last component while the close animation runs.
-  const [last, setLast] = useState<string | null>(id)
-  if (id && id !== last) setLast(id)
-  const c = last ? componentById(last) : null
+  // Mounted only while open: opening / closing swaps the card and this in one update, so they morph.
+  const c = id ? componentById(id) : null
   if (!c) return null
   const on = state.comps.added.includes(c.id)
   const kind = c.kind === 'mp' ? 'model portfolio' : 'building block'
   return (
-    <Modal
-      open={!!id}
-      onOpenChange={(o) => { if (!o) onClose() }}
+    <ExpandedCard
+      name={cardNames(c.id).box}
+      titleName={cardNames(c.id).title}
+      metaName={cardNames(c.id).meta}
+      onClose={() => onClose()}
       title={c.name}
       meta={`${c.area} · ${c.region} · ${c.provider}`}
       headerExtra={conflicts.length > 0 && <ConflictTag>Conflicts with exclusions: {conflicts.join(', ')}</ConflictTag>}
       footer={
         <>
           {on && <span className="mr-auto inline-flex items-center gap-1.5 text-xs text-fg-muted"><Check className="size-3 text-accent" strokeWidth={3} />In this portfolio</span>}
-          <Button onClick={onClose}>Close</Button>
-          <Button variant={on ? 'secondary' : 'primary'} onClick={() => { toggle(c.id, !on); onClose() }}>
+          <Button onClick={() => onClose()}>Close</Button>
+          {/* Same transition: the card collapses back and its row slides into (or out of) the sidebar. */}
+          <Button variant={on ? 'secondary' : 'primary'} onClick={() => onClose(() => toggle(c.id, !on))}>
             {on ? 'Remove ' : 'Add '}{kind}
           </Button>
         </>
       }
     >
       <ComponentDetail c={c} />
-    </Modal>
+    </ExpandedCard>
   )
 }
 

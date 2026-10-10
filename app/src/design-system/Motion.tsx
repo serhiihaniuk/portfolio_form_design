@@ -72,9 +72,13 @@ export function MotionDoc() {
         ['Screen heading (title + description) and the overview strip: stay put across steps, text cross-fades', <C key="5">{'<ViewTransition name="screen-heading" share="morph">'}</C>, <C key="5b">morph (shared element)</C>],
         ['Simulation: switching view or Current / New — the table cross-fades', <C key="6">{'scroll container: update={{ positions: "table-swap" }}'}</C>, <C key="6b">table-swap (fade)</C>],
         ['Allocation: picking a row by its name — the details panel cross-fades (typing or dragging selects instantly)', <C key="7">{'panel: update={{ detail: "swap" }}'}</C>, <C key="7b">swap</C>],
+        ['Learn more: the catalogue card expands into a large card (box grows from the card, name and meta line fly) and collapses back', <C key="8">{'card + ExpandedCard: <ViewTransition name={"card-" + id} share="card-expand">'}</C>, <C key="8b">card-expand · text-morph · fade-in / fade-out</C>],
         ['Groups in Portfolio components (heading, field, list) below a change', <C key="4">{'<ViewTransition update="group-move">'}</C>, <C key="4b">group-move (glides, no stretch)</C>],
         ['Benchmark details when picking another benchmark', <C key="3">{'<ViewTransition key={id} name="bench-detail" share="swap">'}</C>, <C key="3b">swap (cross-fade)</C>],
       ]} />
+
+      <H3>Shared elements: one name, two places</H3>
+      <p className="max-w-200 text-fg-secondary">Give two elements the same <C>name</C> and render only one of them at a time: when an update inside <C>startTransition</C> removes one and adds the other, the browser morphs between them (position, size, picture). Learn more works this way — the catalogue card leaves its slot empty and unnamed while open, the expanded card takes the name. It renders with React’s <C>createPortal</C>, which mounts in the same update; a portal that mounts a pass later (like a dialog library’s) would miss the transition’s “after” picture.</p>
 
       <H3>The pieces</H3>
       <Code>{`

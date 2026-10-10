@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 import { benchFor, figures, poolFor, TOP_WEIGHTS, type Component } from '../data/data'
 import { f2 } from '../state/portfolio'
 
-/** Component details (summary, figures, benchmark, risk/return, top 10). Used by the Allocation panel and the Learn more modal. */
+/**
+ * Component details (summary, figures, benchmark, risk/return, top 10). Used by the Allocation panel and the Learn more modal.
+ */
 export function ComponentDetail({ c }: { c: Component }) {
   const f = figures(c)
   return (
