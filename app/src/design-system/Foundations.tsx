@@ -99,7 +99,7 @@ export function Colour() {
         </div>
       ))}
       <H3>UBS colour tokens</H3>
-      <p className="mb-3 max-w-200 text-xs text-fg-muted">Everything ubs.com publishes as <C>--col-*</C> (light theme), here as <C>--color-ubs-*</C>. Semantic tokens point at these; pick a new one from this list before reaching for anything else.</p>
+      <p className="mb-3 max-w-200 text-xs text-fg-muted">The UBS tokens this app uses (from ubs.com <C>--col-*</C>, light theme), as <C>--color-ubs-*</C>. Semantic tokens point at these. Need another colour? Pick it from the full list of 108 in <C>docs/ubs-colour-tokens.md</C> before reaching for anything else.</p>
       <UbsTokens />
     </DocSection>
   )

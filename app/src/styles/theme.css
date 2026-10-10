@@ -5,7 +5,8 @@
  *   1. Tailwind's built-in scales, kept as they ship: spacing (4px steps), type sizes, font weights,
  *      radius, breakpoints. Use them directly: p-4, text-sm, rounded-full.
  *   2. UBS colour tokens — the colours ubs.com publishes as --col-* (light theme), under their UBS names
- *      with a "ubs-" prefix: --col-text-subtle → --color-ubs-text-subtle. Generated from ubs.com; don't edit by hand.
+ *      with a "ubs-" prefix: --col-text-subtle → --color-ubs-text-subtle. Only the ones this app uses are here;
+ *      the full list (108) is in docs/ubs-colour-tokens.md — copy a token from there when a new one is needed.
  *   3. Semantic tokens: what a colour is FOR in this app (text, surface, line, accent, excluded …).
  *      Each one points at a UBS token. Components use these: text-fg-muted, bg-surface-muted, border-line.
  *   Edge cases: only where UBS has no suitable colour, a Tailwind default colour is brought back explicitly
@@ -29,102 +30,40 @@
   /* UBS pop shadow (--col-opacity-shadow = rgba(28, 28, 28, 0.10)) — used by every floating surface: shadow-pop */
   --shadow-pop: 0 4px 12px rgb(28 28 28 / 0.1);
 
-  /* ---- 2. UBS colour tokens (from ubs.com, light theme) ---- */
+  /* ---- 2. UBS colour tokens in use (values from ubs.com, light theme; full list: docs/ubs-colour-tokens.md) ---- */
   /* Text */
   --color-ubs-text-disabled: #B8B3A2;
-  --color-ubs-text-highlight: #DA0000;
   --color-ubs-text-inverted: #FFFFFF;
   --color-ubs-text-primary: #1C1C1C;
-  --color-ubs-text-readonly: #5A5D5C;
   --color-ubs-text-subtle: #5A5D5C;
 
   /* Icon */
-  --color-ubs-icon-brand: #DA0000;
-  --color-ubs-icon-brand-hovered: #8A000A;
-  --color-ubs-icon-disabled: #B8B3A2;
   --color-ubs-icon-error: #DA0000;
-  --color-ubs-icon-inverted: #FFFFFF;
-  --color-ubs-icon-primary: #1C1C1C;
-  --color-ubs-icon-primary-hovered: #5A5D5C;
   --color-ubs-icon-readonly: #8E8D83;
-  --color-ubs-icon-subtle: #5A5D5C;
-  --color-ubs-icon-subtle-hovered: #1C1C1C;
-
-  /* Link text */
-  --color-ubs-link-text-brand: #DA0000;
-  --color-ubs-link-text-brand-hovered: #8A000A;
-  --color-ubs-link-text-primary: #1C1C1C;
-  --color-ubs-link-text-primary-hovered: #404040;
-  --color-ubs-link-text-subtle: #5A5D5C;
-  --color-ubs-link-text-subtle-hovered: #1C1C1C;
 
   /* Background · UI surfaces */
   --color-ubs-background-ui-10: #FFFFFF;
-  --color-ubs-background-ui-10-hovered: #F4F3EE;
   --color-ubs-background-ui-20: #F9F9F7;
-  --color-ubs-background-ui-20-hovered: #F4F3EE;
   --color-ubs-background-ui-30: #F4F3EE;
   --color-ubs-background-ui-30-hovered: #E0DFD7;
-  --color-ubs-background-ui-40: #FBF9EE;
-  --color-ubs-background-ui-40-hovered: #F3E8C3;
   --color-ubs-background-ui-80: #404040;
 
   /* Background · tags */
   --color-ubs-background-tags-01: #F4F3EE;
-  --color-ubs-background-tags-02: #E1EAA9;
-  --color-ubs-background-tags-03: #EBD698;
-  --color-ubs-background-tags-04: #F3E8C3;
-  --color-ubs-background-tags-05: #D7D9EE;
-  --color-ubs-background-tags-06: #BDE5CD;
   --color-ubs-background-tags-07: #F79CA2;
-  --color-ubs-background-tags-08: #B4E0FE;
-  --color-ubs-background-tags-09: #B1DFE2;
-  --color-ubs-background-tags-10: #FFE094;
-  --color-ubs-background-tags-11: #ECCEF8;
-  --color-ubs-background-tags-12: #D2BD9D;
-  --color-ubs-background-tags-13: #83C9E2;
-  --color-ubs-background-tags-14: #92CEAB;
-  --color-ubs-background-tags-16: #C6D8F1;
-  --color-ubs-background-tags-17: #80CED0;
-  --color-ubs-background-tags-18: #F2CFD4;
-  --color-ubs-background-tags-19: #BFD8E3;
-  --color-ubs-background-tags-20: #B0E1E3;
   --color-ubs-background-tags-21: #FED2D4;
   --color-ubs-background-tags-22: #E0DFD7;
 
   /* Background · other */
   --color-ubs-background-brand: #E60000;
   --color-ubs-background-brand-hovered: #8A000A;
-  --color-ubs-background-disabled: #CCCABC;
-  --color-ubs-background-error: #DA0000;
   --color-ubs-background-highlight-01: #8A000A;
-  --color-ubs-background-highlight-02: #86671D;
-  --color-ubs-background-highlight-03: #CCCABC;
-  --color-ubs-background-inverted: #FFFFFF;
   --color-ubs-background-primary: #1C1C1C;
-  --color-ubs-background-primary-hovered: #5A5D5C;
-  --color-ubs-background-readonly: #8E8D83;
-  --color-ubs-background-subtle: #5A5D5C;
-  --color-ubs-background-subtle-hovered: #1C1C1C;
-  --color-ubs-background-subtler: #8E8D83;
-  --color-ubs-background-subtler-hovered: #5A5D5C;
-  --color-ubs-background-success: #CAD67A;
-  --color-ubs-background-warning: #E4A911;
 
   /* Border */
-  --color-ubs-border-brand: #DA0000;
-  --color-ubs-border-brand-hovered: #8A000A;
-  --color-ubs-border-disabled: #B8B3A2;
-  --color-ubs-border-error: #DA0000;
   --color-ubs-border-illustrative: #CCCABC;
-  --color-ubs-border-inverted: #FFFFFF;
   --color-ubs-border-light: #8E8D83;
   --color-ubs-border-light-hovered: #404040;
-  --color-ubs-border-primary: #1C1C1C;
-  --color-ubs-border-primary-hovered: #404040;
-  --color-ubs-border-readonly: #8E8D83;
-  --color-ubs-border-subtle: #5A5D5C;
-  --color-ubs-border-subtle-hovered: #404040;
 
   /* Focus */
   --color-ubs-focus-ring: #0769A6;
@@ -132,31 +71,12 @@
   /* Chart (categorical) */
   --color-ubs-chart-01: #AF8626;
   --color-ubs-chart-02: #00759E;
-  --color-ubs-chart-03: #879420;
-  --color-ubs-chart-04: #4B2D58;
-  --color-ubs-chart-05: #9F8865;
-  --color-ubs-chart-06: #2E476B;
   --color-ubs-chart-07: #469A6C;
-  --color-ubs-chart-08: #AD3E4A;
-  --color-ubs-chart-09: #8489BD;
-  --color-ubs-chart-10: #0C7EC6;
-  --color-ubs-chart-11: #654D16;
   --color-ubs-chart-12: #804C95;
-  --color-ubs-chart-13: #45999C;
-  --color-ubs-chart-14: #4972AC;
-  --color-ubs-chart-15: #CC707A;
-  --color-ubs-chart-16: #295B40;
-  --color-ubs-chart-17: #545A9C;
-  --color-ubs-chart-18: #785E4A;
   --color-ubs-chart-19: #07476F;
-  --color-ubs-chart-20: #620004;
 
   /* Graph (neutral) */
-  --color-ubs-graph-chart-01: #8E8D83;
   --color-ubs-graph-chart-02: #7A7870;
-  --color-ubs-graph-chart-03: #5A5D5C;
-  --color-ubs-graph-chart-04: #404040;
-  --color-ubs-graph-chart-05: #1C1C1C;
 
   /* ---- Edge cases: Tailwind colours, only where UBS has none ---- */
   --color-white: #FFFFFF;                 /* Tailwind white — for text on the brand red */

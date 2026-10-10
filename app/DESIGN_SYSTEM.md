@@ -53,9 +53,9 @@ Tailwind defaults ─► UBS colour tokens ─► Semantic tokens ─► Compone
    - `font-normal` / `font-semibold`, `rounded-full`, the breakpoints.
 
    Using the built-in scales means anyone who knows Tailwind already knows our sizes.
-2. **UBS colour tokens.** These are the colours ubs.com publishes as `--col-*` (108 of them, light theme).
+2. **UBS colour tokens.** These are the colours ubs.com publishes as `--col-*` (light theme). The theme keeps only the 29 the app uses; the full list of 108 is in [docs/ubs-colour-tokens.md](docs/ubs-colour-tokens.md).
    - They keep their UBS names with a `ubs-` prefix: `--col-text-subtle` becomes `--color-ubs-text-subtle`.
-   - They're generated from ubs.com, so they match UBS exactly; don't edit them by hand.
+   - Values are copied from ubs.com, so they match UBS exactly; don't change them. To use another UBS colour, copy its line from the reference list.
    - **Edge cases only:** where UBS has no fitting colour, a Tailwind default colour is added back explicitly and marked in the file. Today there are two:
      - `red-50`, the palest red behind conflict tags (UBS's lightest red tag is too strong behind text);
      - `white`, for text on the red.
