@@ -69,6 +69,9 @@ export function MotionDoc() {
       <DocTable heads={['What', 'Boundary', 'CSS classes']} rows={[
         ['Changing step (tabs, Back / Next, links)', <C key="1">{'<ViewTransition update={{ forward: "step-forward", back: "step-back", default: "none" }}>'}</C>, <C key="1b">step-forward · step-back</C>],
         ['Rows in Portfolio components, excluded instruments, exclusion chips', <C key="2">{'<ViewTransition key={id} enter="item-in" exit="item-out" update="item-move">'}</C>, <C key="2b">item-in · item-out · item-move</C>],
+        ['Screen heading (title + description) and the overview strip: stay put across steps, text cross-fades', <C key="5">{'<ViewTransition name="screen-heading" share="morph">'}</C>, <C key="5b">morph (shared element)</C>],
+        ['Simulation: switching view or Current / New — the table cross-fades', <C key="6">{'scroll container: update={{ positions: "table-swap" }}'}</C>, <C key="6b">table-swap (fade)</C>],
+        ['Allocation: picking a row by its name — the details panel cross-fades (typing or dragging selects instantly)', <C key="7">{'panel: update={{ detail: "swap" }}'}</C>, <C key="7b">swap</C>],
         ['Groups in Portfolio components (heading, field, list) below a change', <C key="4">{'<ViewTransition update="group-move">'}</C>, <C key="4b">group-move (glides, no stretch)</C>],
         ['Benchmark details when picking another benchmark', <C key="3">{'<ViewTransition key={id} name="bench-detail" share="swap">'}</C>, <C key="3b">swap (cross-fade)</C>],
       ]} />

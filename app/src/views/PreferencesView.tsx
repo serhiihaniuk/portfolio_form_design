@@ -22,7 +22,7 @@ export function PreferencesView() {
 
   return (
     <>
-      <Section title="Preferences" description="Please configure the preferences specific to the model portfolio in the fields below." className="border-b border-line">
+      <Section screenHeading title="Preferences" description="Please configure the preferences specific to the model portfolio in the fields below." className="border-b border-line">
         <div className="mt-4 flex flex-wrap items-end gap-x-10 gap-y-4">
           <Field label="Minimum position size">
             <AffixInput value={p.minPos} onValueChange={(v) => update((s) => { s.prefs.minPos = v })} inputMode="decimal" suffix="%" className="w-37.5" />

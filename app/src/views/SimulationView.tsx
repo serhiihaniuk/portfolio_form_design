@@ -1,5 +1,5 @@
 import { Info, MoreHorizontal, TriangleAlert } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { addTransitionType, startTransition, useState, ViewTransition, type ReactNode } from 'react'
 import { Button } from '../components/ui/button'
 import { Section } from '../components/ui/layout'
 import { Menu, MenuTrigger } from '../components/ui/menu'
@@ -22,6 +22,8 @@ export function SimulationView() {
   const [compact, setCompact] = useState(false)
   const [showZero, setShowZero] = useState(false)
   const rows = state.sim.rows
+  // Changing view or version swaps the table in a transition tagged 'positions' (see the table boundary below).
+  const switchTable = (fn: () => void) => startTransition(() => { addTransitionType('positions'); fn() })
   const cur = mode === 'current'
   const changes = rows.filter((r) => r.removed || Math.abs(r.nw - r.w) >= 0.005).length
   const total = cur ? rows.reduce((s, r) => s + r.w, 0) : rows.filter((r) => !r.removed).reduce((s, r) => s + r.nw, 0)
@@ -37,13 +39,14 @@ export function SimulationView() {
 
   return (
     <Section
+      screenHeading
       title={<>Simulation <span className="ml-1.5 text-base text-fg-subtle">{state.data.name}</span></>}
       description="Compare the current portfolio with the new allocation and fine-tune position weights."
       className="flex min-h-0 flex-1 flex-col"
     >
       {/* Version bar: Current / New switch the whole screen; the overview toggle sits right next to them. */}
       <div className="mt-3.5 flex flex-wrap items-end gap-x-7 gap-y-2 border-b border-line">
-        <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
+        <Tabs value={mode} onValueChange={(v) => switchTable(() => setMode(v as Mode))}>
           <TabsList variant="version" aria-label="Portfolio version">
             <Tab value="current">Current</Tab>
             <Tab value="new">New {changes > 0 && <TabCount>{changes} {changes === 1 ? 'change' : 'changes'}</TabCount>}</Tab>
@@ -56,7 +59,7 @@ export function SimulationView() {
           <div className="ml-auto flex items-center gap-1.5 pb-2.5 text-xs text-fg-muted">
             <Info className="size-3.5" strokeWidth={1.5} />
             Read-only — the portfolio as it is today.
-            <Button variant="link" className="text-xs" onClick={() => setMode('new')}>Switch to New</Button>
+            <Button variant="link" className="text-xs" onClick={() => switchTable(() => setMode('new'))}>Switch to New</Button>
           </div>
         )}
       </div>
@@ -64,7 +67,7 @@ export function SimulationView() {
 
       <div className="mt-4 flex min-h-0 flex-1 flex-col">
         <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-line">
-          <Tabs value={view} onValueChange={(v) => setView(v as View)}>
+          <Tabs value={view} onValueChange={(v) => switchTable(() => setView(v as View))}>
             <TabsList variant="sub" aria-label="Positions view">
               {VIEWS.map(([v, l]) => <Tab key={v} value={v}>{l}</Tab>)}
             </TabsList>
@@ -77,11 +80,14 @@ export function SimulationView() {
             </label>
           </div>
         </div>
+        {/* The scrolling container is the boundary (its picture stays clipped): the old table fades out, the new one fades in. */}
+        <ViewTransition update={{ positions: 'table-swap', default: 'none' }} default="none">
         <div className="min-h-0 flex-1 overflow-auto">
           {view === 'instrument' ? <InstrumentTable mode={mode} showZero={showZero} />
             : <GroupTable mode={mode} showZero={showZero} title={{ class: 'Asset class', block: 'Building block', exposure: 'Currency' }[view]}
                 keyOf={view === 'class' ? (r) => r.cls : view === 'block' ? (r) => (r.bb !== '—' ? r.bb : r.cls === 'Liquidity' ? 'Cash' : 'Single instruments') : (r) => r.ccy} />}
         </div>
+        </ViewTransition>
         <div className="flex shrink-0 items-center justify-end gap-4 border-t border-line-strong px-2.5 pt-2.5">
           <span className="text-fg-muted">{cur ? 'Total weight' : 'Total new weight'}</span>
           <strong className={cn('text-lg font-semibold tabular-nums', !near100(total) && 'text-error')}>{f2(total)}%</strong>
@@ -93,6 +99,7 @@ export function SimulationView() {
 }
 
 const th = 'sticky top-0 z-2 border-b border-line bg-surface-subtle px-2.5 py-2 text-left font-normal whitespace-nowrap text-fg-muted'
+
 const td = 'border-b border-line px-2.5 py-1.5 align-middle'
 
 function InstrumentTable({ mode, showZero }: { mode: Mode; showZero: boolean }) {

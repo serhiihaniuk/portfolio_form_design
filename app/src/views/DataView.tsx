@@ -13,7 +13,7 @@ export function DataView() {
   const d = state.data
   return (
     <div className="flex flex-wrap">
-      <Section title="Model portfolio data" description="Please enter the data specific to the model portfolio." className="w-75 shrink-0 border-r border-line">
+      <Section screenHeading title="Model portfolio data" description="Please enter the data specific to the model portfolio." className="w-75 shrink-0 border-r border-line">
         <div className="mt-5 flex flex-col gap-4">
           <Field label="Model portfolio code">
             <Input value={d.code} onValueChange={(v) => update((s) => { s.data.code = v })} />

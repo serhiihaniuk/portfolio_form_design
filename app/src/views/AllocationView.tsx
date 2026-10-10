@@ -1,6 +1,6 @@
 import { Tooltip } from '@base-ui/react/tooltip'
 import { X } from 'lucide-react'
-import { useState } from 'react'
+import { addTransitionType, startTransition, useState, ViewTransition } from 'react'
 import { Button } from '../components/ui/button'
 import { Section } from '../components/ui/layout'
 import { ScrollArea } from '../components/ui/scroll-area'
@@ -21,6 +21,9 @@ export function AllocationView() {
   const list = allocItems(state)
   const sel = list.find((it) => it.key === selKey) ?? list[0]
   const total = list.reduce((s, it) => s + weightOf(state, it), 0)
+  // Clicking a row's name animates the details panel; focusing its field or pressing its slider selects instantly,
+  // so typing and dragging are never held up by an animation.
+  const pick = (key: string) => startTransition(() => { addTransitionType('detail'); setSelKey(key) })
   const setW = (it: AllocItem, v: number) => update((s) => setWeight(s, it, round2(Math.min(100, Math.max(0, v)))))
 
   const distributeEvenly = () => update((s) => {
@@ -31,6 +34,7 @@ export function AllocationView() {
 
   return (
     <Section
+      screenHeading
       title="Component allocation"
       description="Set the weight of each component. Weights must add up to 100%."
       actions={<Button variant="link" className="self-end" aria-pressed={compact} onClick={() => setCompact(!compact)}>{compact ? 'Full view' : 'Compact view'}</Button>}
@@ -44,12 +48,14 @@ export function AllocationView() {
           <div className="flex justify-between pr-5 pb-2 text-xs text-fg-muted"><span>Components</span><span>Weight</span></div>
           <ScrollArea hints="edges" className="flex-1 border-t border-line">
             {list.map((it) => (
-              <AllocRow key={it.key} it={it} selected={it.key === sel?.key} onSelect={() => setSelKey(it.key)} total={total} setW={setW} />
+              <AllocRow key={it.key} it={it} selected={it.key === sel?.key} onPick={() => pick(it.key)} onSelect={() => setSelKey(it.key)} total={total} setW={setW} />
             ))}
             {!list.length && <p className="p-3 text-fg-subtle">No components yet. Add them on the Component selection tab.</p>}
           </ScrollArea>
           <TotalBar list={list} selKey={sel?.key} total={total} onDistribute={list.length > 1 ? distributeEvenly : undefined} />
         </div>
+        {/* The scrolling panel itself is the boundary, so the cross-fade stays clipped to the panel. */}
+        <ViewTransition update={{ detail: 'swap', default: 'none' }} default="none">
         <div className="min-h-0 overflow-y-auto bg-surface-muted px-7 pt-5 pb-6" aria-live="polite">
           {sel ? (
             <>
@@ -68,13 +74,14 @@ export function AllocationView() {
             </>
           ) : <p className="text-fg-subtle">Add components on the Component selection tab.</p>}
         </div>
+        </ViewTransition>
       </div>
     </Section>
   )
 }
 
 /** One weight row: select area (name, meta, conflict), weight field, and the share line that doubles as a slider. */
-function AllocRow({ it, selected, onSelect, total, setW }: { it: AllocItem; selected: boolean; onSelect: () => void; total: number; setW: (it: AllocItem, v: number) => void }) {
+function AllocRow({ it, selected, onPick, onSelect, total, setW }: { it: AllocItem; selected: boolean; onPick: () => void; onSelect: () => void; total: number; setW: (it: AllocItem, v: number) => void }) {
   const { state } = usePortfolio()
   const w = weightOf(state, it)
   const cf = it.comp ? conflictsOf(it.comp, state.prefs) : []
@@ -82,7 +89,7 @@ function AllocRow({ it, selected, onSelect, total, setW }: { it: AllocItem; sele
   return (
     <div className={cn('flex flex-col gap-2 border-b border-line pt-2.5 pr-5 pb-3 pl-3', selected ? 'bg-surface-muted' : 'bg-surface hover:bg-surface-subtle')}>
       <div className="flex items-center gap-3">
-        <button type="button" onClick={onSelect} aria-pressed={selected} className="flex min-w-0 flex-1 cursor-pointer flex-col text-left">
+        <button type="button" onClick={onPick} aria-pressed={selected} className="flex min-w-0 flex-1 cursor-pointer flex-col text-left">
           <span>{it.name}</span>
           <span className="text-xs text-fg-muted">{it.meta}</span>
           {cf.length > 0 && <ConflictTag className="mt-1">Conflicts with exclusions: {cf.join(', ')}</ConflictTag>}

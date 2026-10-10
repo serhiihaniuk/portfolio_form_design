@@ -37,6 +37,13 @@
 ::view-transition-old(.morph),
 ::view-transition-new(.morph) { animation-duration: 260ms; height: 100%; object-fit: none; object-position: top left; }
 
+/* ---- Table swap (Simulation views, Current / New): a plain cross-fade ---- */
+::view-transition-group(.table-swap) { animation-duration: 0s; }
+::view-transition-old(.table-swap) { animation: 120ms ease-in both vt-fade-out; }
+::view-transition-new(.table-swap) { animation: 180ms ease-out 40ms both vt-fade-in; }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+
 /* ---- Items appearing in / leaving a list (basket rows, exclusion chips, instrument rows) ---- */
 ::view-transition-new(.item-in):only-child { animation: 220ms ease-out both vt-item-in; }
 ::view-transition-old(.item-out):only-child { animation: 150ms ease-in both vt-item-out; }

@@ -29,7 +29,7 @@ export function ComponentsView() {
   const list = filtered.filter((c) => c.kind === kind)
 
   return (
-    <Section title="Component selection" description="Please add the components of the model portfolio." className="flex min-h-0 flex-1 flex-col">
+    <Section screenHeading title="Component selection" description="Please add the components of the model portfolio." className="flex min-h-0 flex-1 flex-col">
       <div className="mt-4.5 grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_23.75rem] grid-rows-[minmax(0,1fr)] gap-7">
         <div className="flex min-h-0 flex-col">
           <div className="flex flex-wrap gap-x-3 gap-y-2.5">

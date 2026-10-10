@@ -1,16 +1,25 @@
-import type { ReactNode } from 'react'
+import { ViewTransition, type ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 
-/** Screen section: 24px sides, title (20px regular) and a one-line description. */
-export function Section({ title, description, actions, className, children }: { title?: ReactNode; description?: ReactNode; actions?: ReactNode; className?: string; children?: ReactNode }) {
+/**
+ * Screen section: 24px sides, title (20px regular) and a one-line description.
+ * screenHeading: the first heading of each step. It carries one fixed view-transition name, so when the step
+ * changes it stays where it is and only its text cross-fades, while the rest of the screen slides.
+ */
+export function Section({ title, description, actions, screenHeading, className, children }: { title?: ReactNode; description?: ReactNode; actions?: ReactNode; screenHeading?: boolean; className?: string; children?: ReactNode }) {
+  const heading = (
+    <div>
+      {title && <h2 className="mb-1 text-xl">{title}</h2>}
+      {description && <p className="text-fg-secondary">{description}</p>}
+    </div>
+  )
   return (
     <section className={cn('px-6 pt-5 pb-5.5', className)}>
       {(title || actions) && (
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            {title && <h2 className="mb-1 text-xl">{title}</h2>}
-            {description && <p className="text-fg-secondary">{description}</p>}
-          </div>
+          {screenHeading ? (
+            <ViewTransition name="screen-heading" share="morph" update="none">{heading}</ViewTransition>
+          ) : heading}
           {actions}
         </div>
       )}
